@@ -1,28 +1,23 @@
 /*
-
  * Copyright (C) 2025 Artem Savkin
  
  */
 #include "display_helper.h"
 #include "global_def.h"
-
 #ifndef _LULU_EYES_H
 #define _LULU_EYES_H
-
 // Usage of monochrome display colors
 #define BGCOLOR 0          // background and overlays
 #define MAINCOLOR TFT_BLUE // drawings
-
+#define HEARTCOLOR TFT_RED // heart color
 // For mood type switch
 #define DEFAULT 0
 #define TIRED 1
 #define ANGRY 2
 #define HAPPY 3
-
 // For turning things on or off
 #define ON 1
 #define OFF 0
-
 // For switch "predefined positions"
 #define N 1  // north, top center
 #define NE 2 // north-east, top right
@@ -34,13 +29,11 @@
 #define NW 8 // north-west, top left
 // for middle center set "DEFAULT"
 
-
 //136k sprite
 class LuLuEyes
 {
 private:
     // Yes, everything is currently still accessible. Be responsibly and don't mess things up :)
-
 public:
     // LGFX_MyDisplay *display;
     inline static LGFX_Sprite* sprite;
@@ -49,7 +42,6 @@ public:
     int screenHeight = 64;      // OLED display height, in pixels
     int frameInterval = 20;     // default value for 50 frames per second (1000/50 = 20 milliseconds)
     unsigned long fpsTimer = 0; // for timing the frames per second
-
     // For controlling mood types and expressions
     bool tired = 0;
     bool angry = 0;
@@ -58,11 +50,14 @@ public:
     bool cyclops = 0;   // if true, draw only one eye
     bool eyeL_open = 0; // left eye opened or closed?
     bool eyeR_open = 0; // right eye opened or closed?
-
+    // Heart mode
+    bool hearts = 0;
+    unsigned long heartsAnimationTimer = 0;
+    int heartsAnimationDuration = 2000; // 2 seconds total (1 second transform to hearts, 1 second transform back)
+    bool heartsToggle = 0;
     //*********************************************************************************************
     //  Eyes Geometry
     //*********************************************************************************************
-
     // EYE LEFT - size and border radius
     int eyeLwidthDefault = 80;
     int eyeLheightDefault = 80;
@@ -75,7 +70,6 @@ public:
     byte eyeLborderRadiusDefault = 8;
     byte eyeLborderRadiusCurrent = eyeLborderRadiusDefault;
     byte eyeLborderRadiusNext = eyeLborderRadiusDefault;
-
     // EYE RIGHT - size and border radius
     int eyeRwidthDefault = eyeLwidthDefault;
     int eyeRheightDefault = eyeLheightDefault;
@@ -88,7 +82,6 @@ public:
     byte eyeRborderRadiusDefault = 8;
     byte eyeRborderRadiusCurrent = eyeRborderRadiusDefault;
     byte eyeRborderRadiusNext = eyeRborderRadiusDefault;
-
     // EYE LEFT - Coordinates
     int eyeLxDefault = ((screenWidth) - (eyeLwidthDefault + spaceBetweenDefault + eyeRwidthDefault)) / 2;
     int eyeLyDefault = ((screenHeight - eyeLheightDefault) / 2);
@@ -96,7 +89,6 @@ public:
     int eyeLy = eyeLyDefault;
     int eyeLxNext = eyeLx;
     int eyeLyNext = eyeLy;
-
     // EYE RIGHT - Coordinates
     int eyeRxDefault = eyeLx + eyeLwidthCurrent + spaceBetweenDefault;
     int eyeRyDefault = eyeLy;
@@ -104,7 +96,6 @@ public:
     int eyeRy = eyeRyDefault;
     int eyeRxNext = eyeRx;
     int eyeRyNext = eyeRy;
-
     // BOTH EYES
     // Eyelid top size
     byte eyelidsHeightMax = eyeLheightDefault / 2; // top eyelids max height
@@ -120,51 +111,42 @@ public:
     int spaceBetweenDefault = 10;
     int spaceBetweenCurrent = spaceBetweenDefault;
     int spaceBetweenNext = 10;
-
     //*********************************************************************************************
     //  Macro Animations
     //*********************************************************************************************
-
     // Animation - horizontal flicker/shiver
     bool hFlicker = 0;
     bool hFlickerAlternate = 0;
     byte hFlickerAmplitude = 2;
-
     // Animation - vertical flicker/shiver
     bool vFlicker = 0;
     bool vFlickerAlternate = 0;
     byte vFlickerAmplitude = 10;
-
     // Animation - auto blinking
     bool autoblinker = 0;           // activate auto blink animation
     int blinkInterval = 1;          // basic interval between each blink in full seconds
     int blinkIntervalVariation = 4; // interval variaton range in full seconds, random number inside of given range will be add to the basic blinkInterval, set to 0 for no variation
     unsigned long blinktimer = 0;   // for organising eyeblink timing
-
     // Animation - idle mode: eyes looking in random directions
     bool idle = 0;
     int idleInterval = 1;                 // basic interval between each eye repositioning in full seconds
     int idleIntervalVariation = 3;        // interval variaton range in full seconds, random number inside of given range will be add to the basic idleInterval, set to 0 for no variation
     unsigned long idleAnimationTimer = 0; // for organising eyeblink timing
-
     // Animation - eyes confused: eyes shaking left and right
     bool confused = 0;
     unsigned long confusedAnimationTimer = 0;
     int confusedAnimationDuration = 500;
     bool confusedToggle = 1;
-
     // Animation - eyes laughing: eyes shaking up and down
     bool laugh = 0;
     unsigned long laughAnimationTimer = 0;
     int laughAnimationDuration = 500;
     bool laughToggle = 1;
     
-
     
     //*********************************************************************************************
     //  GENERAL METHODS
     //*********************************************************************************************
-
     // Startup RoboEyes with defined screen-width, screen-height and max. frames per second
     void begin(int width, int height, LGFX_Sprite* _sprite)
     {
@@ -183,7 +165,6 @@ public:
         // sprite->pushSprite(0, 0);
         // setFramerate(frameRate); // calculate frame interval based on defined frameRate
     }
-
     void update()
     {
         // Limit drawing updates to defined max framerate
@@ -193,17 +174,14 @@ public:
         // fpsTimer = millis();
         // }
     }
-
     //*********************************************************************************************
     //  SETTERS METHODS
     //*********************************************************************************************
-
     // Calculate frame interval based on defined frameRate
     void setFramerate(byte fps)
     {
         frameInterval = 1000 / fps;
     }
-
     void setWidth(byte leftEye, byte rightEye)
     {
         eyeLwidthNext = leftEye;
@@ -211,7 +189,6 @@ public:
         eyeLwidthDefault = leftEye;
         eyeRwidthDefault = rightEye;
     }
-
     void setHeight(byte leftEye, byte rightEye)
     {
         eyeLheightNext = leftEye;
@@ -219,7 +196,6 @@ public:
         eyeLheightDefault = leftEye;
         eyeRheightDefault = rightEye;
     }
-
     // Set border radius for left and right eye
     void setBorderradius(byte leftEye, byte rightEye)
     {
@@ -228,14 +204,12 @@ public:
         eyeLborderRadiusDefault = leftEye;
         eyeRborderRadiusDefault = rightEye;
     }
-
     // Set space between the eyes, can also be negative
     void setSpacebetween(int space)
     {
         spaceBetweenNext = space;
         spaceBetweenDefault = space;
     }
-
     // Set mood expression
     void setMood(unsigned char mood)
     {
@@ -263,7 +237,6 @@ public:
             break;
         }
     }
-
     // Set predefined position
     void setPosition(unsigned char position)
     {
@@ -316,7 +289,6 @@ public:
             break;
         }
     }
-
     // Set automated eye blinking, minimal blink interval in full seconds and blink interval variation range in full seconds
     void setAutoblinker(bool active, int interval, int variation)
     {
@@ -328,7 +300,6 @@ public:
     {
         autoblinker = active;
     }
-
     // Set idle mode - automated eye repositioning, minimal time interval in full seconds and time interval variation range in full seconds
     void setIdleMode(bool active, int interval, int variation)
     {
@@ -340,19 +311,16 @@ public:
     {
         idle = active;
     }
-
     // Set curious mode - the respectively outer eye gets larger when looking left or right
     void setCuriosity(bool curiousBit)
     {
         curious = curiousBit;
     }
-
     // Set cyclops mode - show only one eye
     void setCyclops(bool cyclopsBit)
     {
         cyclops = cyclopsBit;
     }
-
     // Set horizontal flickering (displacing eyes left/right)
     void setHFlicker(bool flickerBit, byte Amplitude)
     {
@@ -363,7 +331,6 @@ public:
     {
         hFlicker = flickerBit; // turn flicker on or off
     }
-
     // Set vertical flickering (displacing eyes up/down)
     void setVFlicker(bool flickerBit, byte Amplitude)
     {
@@ -374,27 +341,22 @@ public:
     {
         vFlicker = flickerBit; // turn flicker on or off
     }
-
     //*********************************************************************************************
     //  GETTERS METHODS
     //*********************************************************************************************
-
     // Returns the max x position for left eye
     int getScreenConstraint_X()
     {
         return screenWidth - eyeLwidthCurrent - spaceBetweenCurrent - eyeRwidthCurrent;
     }
-
     // Returns the max y position for left eye
     int getScreenConstraint_Y()
     {
         return screenHeight - eyeLheightDefault; // using default height here, because height will vary when blinking and in curious mode
     }
-
     //*********************************************************************************************
     //  BASIC ANIMATION METHODS
     //*********************************************************************************************
-
     // BLINKING FOR BOTH EYES AT ONCE
     // Close both eyes
     void close()
@@ -404,21 +366,18 @@ public:
         eyeL_open = 0;      // left eye not opened (=closed)
         eyeR_open = 0;      // right eye not opened (=closed)
     }
-
     // Open both eyes
     void open()
     {
         eyeL_open = 1; // left eye opened - if true, drawEyes() will take care of opening eyes again
         eyeR_open = 1; // right eye opened
     }
-
     // Trigger eyeblink animation
     void blink()
     {
         close();
         open();
     }
-
     // BLINKING FOR SINGLE EYES, CONTROL EACH EYE SEPARATELY
     // Close eye(s)
     void close(bool left, bool right)
@@ -434,7 +393,6 @@ public:
             eyeR_open = 0;      // right eye not opened (=closed)
         }
     }
-
     // Open eye(s)
     void open(bool left, bool right)
     {
@@ -447,47 +405,45 @@ public:
             eyeR_open = 1; // right eye opened
         }
     }
-
     // Trigger eyeblink(s) animation
     void blink(bool left, bool right)
     {
         close(left, right);
         open(left, right);
     }
-
     //*********************************************************************************************
     //  MACRO ANIMATION METHODS
     //*********************************************************************************************
-
     // Play confused animation - one shot animation of eyes shaking left and right
     void anim_confused()
     {
         confused = 1;
     }
-
     // Play laugh animation - one shot animation of eyes shaking up and down
     void anim_laugh()
     {
         laugh = 1;
     }
-
+    // Play hearts animation - eyes transform to hearts and back
+    void anim_hearts()
+    {
+        hearts = 1;
+        heartsToggle = 0;
+        heartsAnimationTimer = millis();
+    }
     //*********************************************************************************************
     //  PRE-CALCULATIONS AND ACTUAL DRAWINGS
     //*********************************************************************************************
-
     const int cleanupPadding = 0;
-
     // Создаем прямоугольник, который будет использоваться для очистки
     int cleanupLX = eyeLx - cleanupPadding;
     int cleanupLY = eyeLy - cleanupPadding;
     int cleanupLWidth = eyeLwidthCurrent + 2 * cleanupPadding;
     int cleanupLHeight = eyeLheightCurrent + 2 * cleanupPadding;
-
     int cleanupRX = eyeRx - cleanupPadding;
     int cleanupRY = eyeRy - cleanupPadding;
     int cleanupRWidth = eyeRwidthCurrent + 2 * cleanupPadding;
     int cleanupRHeight = eyeRheightCurrent + 2 * cleanupPadding;
-
     void calcCleanEyes()
     {
         // Заделываем область чуть большего размера, чтобы удалить любые следы
@@ -495,7 +451,6 @@ public:
         cleanupLY = eyeLy - cleanupPadding;
         cleanupLWidth = eyeLwidthCurrent + 2 * cleanupPadding;
         cleanupLHeight = eyeLheightCurrent + 2 * cleanupPadding;
-
         cleanupRX = eyeRx - cleanupPadding;
         cleanupRY = eyeRy - cleanupPadding;
         cleanupRWidth = eyeRwidthCurrent + 2 * cleanupPadding;
@@ -505,18 +460,15 @@ public:
         cleanupLY = max(0, cleanupLY);
         cleanupLWidth = min(screenWidth - cleanupLX, cleanupLWidth);
         cleanupLHeight = min(screenHeight - cleanupLY, cleanupLHeight);
-
         cleanupRX = max(0, cleanupRX);
         cleanupRY = max(0, cleanupRY);
         cleanupRWidth = min(screenWidth - cleanupRX, cleanupRWidth);
         cleanupRHeight = min(screenHeight - cleanupRY, cleanupRHeight);
     }
-
     void cleanEyes()
     {
         // Очищаем область левого глаза
         // fillRect_noTr(cleanupLX, cleanupLY, cleanupLWidth, cleanupLHeight, BGCOLOR);
-
         // // Очищаем область правого глаза, если режим Cyclops отключен
         // if (!cyclops)
         // {
@@ -527,16 +479,41 @@ public:
         sprite->clear();
     }
 
+    // Function to draw a heart shape
+    void drawHeart(int x, int y, int size, uint16_t color)
+    {
+        // Draw the heart using triangles and circles
+        // Top left circle
+        sprite->fillCircle(x + size/4, y + size/4, size/4, color);
+        // Top right circle
+        sprite->fillCircle(x + 3*size/4, y + size/4, size/4, color);
+        // Bottom triangle
+        sprite->fillTriangle(
+            x, y + size/3,
+            x + size, y + size/3,
+            x + size/2, y + size,
+            color
+        );
+    }
 
     void drawEyes()
     {
-
         // display.startWrite();
         //// PRE-CALCULATIONS - EYE SIZES AND VALUES FOR ANIMATION TWEENINGS ////
-
         calcCleanEyes();
+        
+        // Handle hearts animation
+        if (hearts)
+        {
+            unsigned long elapsed = millis() - heartsAnimationTimer;
+            if (elapsed >= heartsAnimationDuration)
+            {
+                hearts = 0; // Animation finished
+            }
+        }
+        
         // Vertical size offset for larger eyes when looking left or right (curious gaze)
-        if (curious)
+        if (curious && !hearts)
         {
             if (eyeLxNext <= 10)
             {
@@ -564,7 +541,6 @@ public:
             eyeLheightOffset = 0; // reset height offset for left eye
             eyeRheightOffset = 0; // reset height offset for right eye
         }
-
         // Left eye height
         eyeLheightCurrent = (eyeLheightCurrent + eyeLheightNext + eyeLheightOffset) / 2;
         eyeLy += ((eyeLheightDefault - eyeLheightCurrent) / 2); // vertical centering of eye when closing
@@ -573,31 +549,27 @@ public:
         eyeRheightCurrent = (eyeRheightCurrent + eyeRheightNext + eyeRheightOffset) / 2;
         eyeRy += (eyeRheightDefault - eyeRheightCurrent) / 2; // vertical centering of eye when closing
         eyeRy -= eyeRheightOffset / 2;
-
         // Open eyes again after closing them
-        if (eyeL_open)
+        if (eyeL_open && !hearts)
         {
             if (eyeLheightCurrent <= 1 + eyeLheightOffset)
             {
                 eyeLheightNext = eyeLheightDefault;
             }
         }
-        if (eyeR_open)
+        if (eyeR_open && !hearts)
         {
             if (eyeRheightCurrent <= 1 + eyeRheightOffset)
             {
                 eyeRheightNext = eyeRheightDefault;
             }
         }
-
         // Left eye width
         eyeLwidthCurrent = (eyeLwidthCurrent + eyeLwidthNext) / 2;
         // Right eye width
         eyeRwidthCurrent = (eyeRwidthCurrent + eyeRwidthNext) / 2;
-
         // Space between eyes
         spaceBetweenCurrent = (spaceBetweenCurrent + spaceBetweenNext) / 2;
-
         // Left eye coordinates
         eyeLx = (eyeLx + eyeLxNext) / 2;
         eyeLy = (eyeLy + eyeLyNext) / 2;
@@ -606,15 +578,12 @@ public:
         eyeRyNext = eyeLyNext;                                          // right eye's y position should be the same as for the left eye
         eyeRx = (eyeRx + eyeRxNext) / 2;
         eyeRy = (eyeRy + eyeRyNext) / 2;
-
         // Left eye border radius
         eyeLborderRadiusCurrent = (eyeLborderRadiusCurrent + eyeLborderRadiusNext) / 2;
         // Right eye border radius
         eyeRborderRadiusCurrent = (eyeRborderRadiusCurrent + eyeRborderRadiusNext) / 2;
-
         //// APPLYING MACRO ANIMATIONS ////
-
-        if (autoblinker)
+        if (autoblinker && !hearts)
         {
             if (millis() >= blinktimer)
             {
@@ -622,9 +591,8 @@ public:
                 blinktimer = millis() + (blinkInterval * 1000) + (random(blinkIntervalVariation) * 1000); // calculate next time for blinking
             }
         }
-
         // Laughing - eyes shaking up and down for the duration defined by laughAnimationDuration (default = 500ms)
-        if (laugh)
+        if (laugh && !hearts)
         {
             if (laughToggle)
             {
@@ -639,9 +607,8 @@ public:
                 laugh = 0;
             }
         }
-
         // Confused - eyes shaking left and right for the duration defined by confusedAnimationDuration (default = 500ms)
-        if (confused)
+        if (confused && !hearts)
         {
             if (confusedToggle)
             {
@@ -656,9 +623,8 @@ public:
                 confused = 0;
             }
         }
-
         // Idle - eyes moving to random positions on screen
-        if (idle)
+        if (idle && !hearts)
         {
             if (millis() >= idleAnimationTimer)
             {
@@ -667,9 +633,8 @@ public:
                 idleAnimationTimer = millis() + (idleInterval * 1000) + (random(idleIntervalVariation) * 1000); // calculate next time for eyes repositioning
             }
         }
-
         // Adding offsets for horizontal flickering/shivering
-        if (hFlicker)
+        if (hFlicker && !hearts)
         {
             if (hFlickerAlternate)
             {
@@ -683,9 +648,8 @@ public:
             }
             hFlickerAlternate = !hFlickerAlternate;
         }
-
         // Adding offsets for horizontal flickering/shivering
-        if (vFlicker)
+        if (vFlicker && !hearts)
         {
             if (vFlickerAlternate)
             {
@@ -699,103 +663,149 @@ public:
             }
             vFlickerAlternate = !vFlickerAlternate;
         }
-
         // Cyclops mode, set second eye's size and space between to 0
-        if (cyclops)
+        if (cyclops && !hearts)
         {
             eyeRwidthCurrent = 0;
             eyeRheightCurrent = 0;
             spaceBetweenCurrent = 0;
         }
-
         //// ACTUAL DRAWINGS ////
-
         // display.clearDisplay(); // start with a blank screen
         // fillRect_noTr(cleanupLX, cleanupLY, cleanupLWidth, cleanupLHeight, BGCOLOR);
         if (cleanupLX != eyeLx || cleanupLY != eyeLy || cleanupLWidth != eyeLwidthCurrent 
             || cleanupLHeight != eyeLheightCurrent || cleanupRX != eyeRx || cleanupRY != eyeRy 
             || cleanupRWidth != eyeRwidthCurrent || cleanupRHeight != eyeRheightCurrent) // if the left eye has changed, clear it and redraw it
             cleanEyes();
-
-        // Draw basic eye rectangles
-
-        sprite->fillRoundRect(eyeLx, eyeLy, eyeLwidthCurrent, eyeLheightCurrent, eyeLborderRadiusCurrent, MAINCOLOR); // left eye
-        if (!cyclops)
+            
+        // Handle hearts animation drawing
+        if (hearts)
         {
-            sprite->fillRoundRect(eyeRx, eyeRy, eyeRwidthCurrent, eyeRheightCurrent, eyeRborderRadiusCurrent, MAINCOLOR); // right eye
-        }
-
-        // Prepare mood type transitions
-        if (tired)
-        {
-            eyelidsTiredHeightNext = eyeLheightCurrent / 2;
-            eyelidsAngryHeightNext = 0;
-        }
-        else
-        {
-            eyelidsTiredHeightNext = 0;
-        }
-        if (angry)
-        {
-            eyelidsAngryHeightNext = eyeLheightCurrent / 2;
-            eyelidsTiredHeightNext = 0;
-        }
-        else
-        {
-            eyelidsAngryHeightNext = 0;
-        }
-        if (happy)
-        {
-            eyelidsHappyBottomOffsetNext = eyeLheightCurrent / 2;
-        }
-        else
-        {
-            eyelidsHappyBottomOffsetNext = 0;
-        }
-
-        // Draw tired top eyelids
-        eyelidsTiredHeight = (eyelidsTiredHeight + eyelidsTiredHeightNext) / 2;
-        if (!cyclops)
-        {
-            sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx, eyeLy + eyelidsTiredHeight - 1, BGCOLOR);                    // left eye
-            sprite->fillTriangle(eyeRx, eyeRy - 1, eyeRx + eyeRwidthCurrent, eyeRy - 1, eyeRx + eyeRwidthCurrent, eyeRy + eyelidsTiredHeight - 1, BGCOLOR); // right eye
-        }
-        else
-        {
-            // Cyclops tired eyelids
-            sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx, eyeLy + eyelidsTiredHeight - 1, BGCOLOR);                                       // left eyelid half
-            sprite->fillTriangle(eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy + eyelidsTiredHeight - 1, BGCOLOR); // right eyelid half
-        }
-
-        // Draw angry top eyelids
-        eyelidsAngryHeight = (eyelidsAngryHeight + eyelidsAngryHeightNext) / 2;
-        if (!cyclops)
-        {
-            sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy + eyelidsAngryHeight - 1, BGCOLOR); // left eye
-            sprite->fillTriangle(eyeRx, eyeRy - 1, eyeRx + eyeRwidthCurrent, eyeRy - 1, eyeRx, eyeRy + eyelidsAngryHeight - 1, BGCOLOR);                    // right eye
+            unsigned long elapsed = millis() - heartsAnimationTimer;
+            float progress = (float)elapsed / heartsAnimationDuration;
+            
+            if (progress <= 0.5f)
+            {
+                // Transforming to hearts (0% to 50% of animation)
+                float transformProgress = progress * 2.0f; // Scale to 0.0 - 1.0
+                
+                // Draw transitioning eyes to hearts
+                int heartSizeL = eyeLwidthCurrent * transformProgress;
+                int heartSizeR = eyeRwidthCurrent * transformProgress;
+                
+                // Position hearts at center of where eyes were
+                int heartLx = eyeLx + (eyeLwidthCurrent - heartSizeL) / 2;
+                int heartLy = eyeLy + (eyeLheightCurrent - heartSizeL) / 2;
+                int heartRx = eyeRx + (eyeRwidthCurrent - heartSizeR) / 2;
+                int heartRy = eyeRy + (eyeRheightCurrent - heartSizeR) / 2;
+                
+                // Draw hearts with increasing size
+                drawHeart(heartLx, heartLy, heartSizeL, HEARTCOLOR);
+                if (!cyclops)
+                {
+                    drawHeart(heartRx, heartRy, heartSizeR, HEARTCOLOR);
+                }
+            }
+            else
+            {
+                // Transforming back from hearts (50% to 100% of animation)
+                float transformProgress = (1.0f - (progress - 0.5f) * 2.0f); // Scale from 1.0 to 0.0
+                
+                // Draw hearts with decreasing size
+                int heartSizeL = eyeLwidthDefault * transformProgress;
+                int heartSizeR = eyeRwidthDefault * transformProgress;
+                
+                // Position hearts at center
+                int heartLx = (screenWidth - heartSizeL) / 2 - (cyclops ? 0 : spaceBetweenDefault/2 + heartSizeL/2);
+                int heartLy = (screenHeight - heartSizeL) / 2;
+                int heartRx = (screenWidth - heartSizeR) / 2 + (cyclops ? 0 : spaceBetweenDefault/2 + heartSizeR/2);
+                int heartRy = (screenHeight - heartSizeR) / 2;
+                
+                if (!cyclops)
+                {
+                    drawHeart(heartLx, heartLy, heartSizeL, HEARTCOLOR);
+                    drawHeart(heartRx, heartRy, heartSizeR, HEARTCOLOR);
+                }
+                else
+                {
+                    drawHeart((screenWidth - heartSizeL) / 2, heartLy, heartSizeL, HEARTCOLOR);
+                }
+            }
         }
         else
         {
-            // Cyclops angry eyelids
-            sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy + eyelidsAngryHeight - 1, BGCOLOR);                    // left eyelid half
-            sprite->fillTriangle(eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy + eyelidsAngryHeight - 1, BGCOLOR); // right eyelid half
+            // Draw basic eye rectangles
+            sprite->fillRoundRect(eyeLx, eyeLy, eyeLwidthCurrent, eyeLheightCurrent, eyeLborderRadiusCurrent, MAINCOLOR); // left eye
+            if (!cyclops)
+            {
+                sprite->fillRoundRect(eyeRx, eyeRy, eyeRwidthCurrent, eyeRheightCurrent, eyeRborderRadiusCurrent, MAINCOLOR); // right eye
+            }
+            // Prepare mood type transitions
+            if (tired)
+            {
+                eyelidsTiredHeightNext = eyeLheightCurrent / 2;
+                eyelidsAngryHeightNext = 0;
+            }
+            else
+            {
+                eyelidsTiredHeightNext = 0;
+            }
+            if (angry)
+            {
+                eyelidsAngryHeightNext = eyeLheightCurrent / 2;
+                eyelidsTiredHeightNext = 0;
+            }
+            else
+            {
+                eyelidsAngryHeightNext = 0;
+            }
+            if (happy)
+            {
+                eyelidsHappyBottomOffsetNext = eyeLheightCurrent / 2;
+            }
+            else
+            {
+                eyelidsHappyBottomOffsetNext = 0;
+            }
+            // Draw tired top eyelids
+            eyelidsTiredHeight = (eyelidsTiredHeight + eyelidsTiredHeightNext) / 2;
+            if (!cyclops)
+            {
+                sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx, eyeLy + eyelidsTiredHeight - 1, BGCOLOR);                    // left eye
+                sprite->fillTriangle(eyeRx, eyeRy - 1, eyeRx + eyeRwidthCurrent, eyeRy - 1, eyeRx + eyeRwidthCurrent, eyeRy + eyelidsTiredHeight - 1, BGCOLOR); // right eye
+            }
+            else
+            {
+                // Cyclops tired eyelids
+                sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx, eyeLy + eyelidsTiredHeight - 1, BGCOLOR);                                       // left eyelid half
+                sprite->fillTriangle(eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy + eyelidsTiredHeight - 1, BGCOLOR); // right eyelid half
+            }
+            // Draw angry top eyelids
+            eyelidsAngryHeight = (eyelidsAngryHeight + eyelidsAngryHeightNext) / 2;
+            if (!cyclops)
+            {
+                sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy + eyelidsAngryHeight - 1, BGCOLOR); // left eye
+                sprite->fillTriangle(eyeRx, eyeRy - 1, eyeRx + eyeRwidthCurrent, eyeRy - 1, eyeRx, eyeRy + eyelidsAngryHeight - 1, BGCOLOR);                    // right eye
+            }
+            else
+            {
+                // Cyclops angry eyelids
+                sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy + eyelidsAngryHeight - 1, BGCOLOR);                    // left eyelid half
+                sprite->fillTriangle(eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy + eyelidsAngryHeight - 1, BGCOLOR); // right eyelid half
+            }
+            // Draw happy bottom eyelids
+            eyelidsHappyBottomOffset = (eyelidsHappyBottomOffset + eyelidsHappyBottomOffsetNext) / 2;
+            sprite->fillRoundRect(eyeLx - 1, (eyeLy + eyeLheightCurrent) - eyelidsHappyBottomOffset + 1, eyeLwidthCurrent + 2, eyeLheightDefault, eyeLborderRadiusCurrent, BGCOLOR); // left eye
+            if (!cyclops)
+            {
+                sprite->fillRoundRect(eyeRx - 1, (eyeRy + eyeRheightCurrent) - eyelidsHappyBottomOffset + 1, eyeRwidthCurrent + 2, eyeRheightDefault, eyeRborderRadiusCurrent, BGCOLOR); // right eye
+            }
         }
-
-        // Draw happy bottom eyelids
-        eyelidsHappyBottomOffset = (eyelidsHappyBottomOffset + eyelidsHappyBottomOffsetNext) / 2;
-        sprite->fillRoundRect(eyeLx - 1, (eyeLy + eyeLheightCurrent) - eyelidsHappyBottomOffset + 1, eyeLwidthCurrent + 2, eyeLheightDefault, eyeLborderRadiusCurrent, BGCOLOR); // left eye
-        if (!cyclops)
-        {
-            sprite->fillRoundRect(eyeRx - 1, (eyeRy + eyeRheightCurrent) - eyelidsHappyBottomOffset + 1, eyeRwidthCurrent + 2, eyeRheightDefault, eyeRborderRadiusCurrent, BGCOLOR); // right eye
-        }
-
         // display.startWrite();
         
         sprite->pushSprite(0,EYEBORDER);
         // display.display(); // show drawings on display
         // display.endWrite();
     } // end of drawEyes method
-
 }; // end of class roboEyes
-
 #endif

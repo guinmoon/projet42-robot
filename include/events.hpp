@@ -24,10 +24,10 @@ public:
     //     return _isCommandFinished;
     // }
 
-    // Proj42Events()
-    // {
+    Proj42Events()
+    {
         
-    // }
+    }
 
     // void sendCommand(int command);
 
@@ -41,13 +41,13 @@ public:
 
     // void commandConfirmTask();
 
-    // void StartReciveThread();
+    void StartTouchThread();
     // static void I2CReciveThread(void *_this);
     // void I2CReciveTask();
 
     // void OnSlaveTouchEvent();
 
-    ~I2CSlaveHelper();
+    ~Proj42Events();
 };
 
 #endif

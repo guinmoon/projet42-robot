@@ -107,9 +107,12 @@ void DisplayHelper::InitDisplay()
     // luluEyes->begin(gfx->width(), gfx->height() , eyesSprite);
 
     // Define some automated eyes behaviour
+    luluEyes->anim_hearts();
     luluEyes->setAutoblinker(ON, 3, 2); // Start auto blinker animation cycle -> bool active, int interval, int variation -> turn on/off, set interval between each blink in full seconds, set range for random interval variation in full seconds
     luluEyes->setIdleMode(ON, 2, 2);
+    
     luluEyes->setSpacebetween(40);
+    // luluEyes->setHeartMode(true, 3000);
     // pauseEyes = true;
     xTaskCreatePinnedToCore(
         this->StartEyesUpdateThread, /* Task function. */

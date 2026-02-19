@@ -33,8 +33,8 @@ void setup()
     proj42.Init();
     // displayHelper = new DisplayHelper();
     // displayHelper->InitDisplay();
-    servo1.attach(servoPin);
-    ServoInit();
+    // servo1.attach(servoPin);
+    // ServoInit();
     //   servo2.attach(servoPin2);
 }
 
