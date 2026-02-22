@@ -509,6 +509,16 @@ public:
             if (elapsed >= heartsAnimationDuration)
             {
                 hearts = 0; // Animation finished
+                // Reset eye positions after hearts animation
+                eyeLheightNext = eyeLheightDefault;
+                eyeRheightNext = eyeRheightDefault;
+                eyeLwidthNext = eyeLwidthDefault;
+                eyeRwidthNext = eyeRwidthDefault;
+                // Reset eye positions to default
+                eyeLxNext = eyeLxDefault;
+                eyeLyNext = eyeLyDefault;
+                eyeRxNext = eyeRxDefault;
+                eyeRyNext = eyeRyDefault;
             }
         }
         
@@ -689,46 +699,49 @@ public:
                 // Transforming to hearts (0% to 50% of animation)
                 float transformProgress = progress * 2.0f; // Scale to 0.0 - 1.0
                 
-                // Draw transitioning eyes to hearts
-                int heartSizeL = eyeLwidthCurrent * transformProgress;
-                int heartSizeR = eyeRwidthCurrent * transformProgress;
+                // Calculate heart positions - keep them centered where eyes are
+                int centerX = screenWidth / 2;
+                int centerY = screenHeight / 2;
                 
-                // Position hearts at center of where eyes were
-                int heartLx = eyeLx + (eyeLwidthCurrent - heartSizeL) / 2;
-                int heartLy = eyeLy + (eyeLheightCurrent - heartSizeL) / 2;
-                int heartRx = eyeRx + (eyeRwidthCurrent - heartSizeR) / 2;
-                int heartRy = eyeRy + (eyeRheightCurrent - heartSizeR) / 2;
+                // Heart size based on eye size and transformation progress
+                int heartSize = eyeLwidthDefault * transformProgress;
                 
-                // Draw hearts with increasing size
-                drawHeart(heartLx, heartLy, heartSizeL, HEARTCOLOR);
+                // Position hearts at the same location as eyes would be
+                int heartLx = eyeLx + (eyeLwidthCurrent - heartSize) / 2;
+                int heartLy = eyeLy + (eyeLheightCurrent - heartSize) / 2;
+                int heartRx = eyeRx + (eyeRwidthCurrent - heartSize) / 2;
+                int heartRy = eyeRy + (eyeRheightCurrent - heartSize) / 2;
+                
+                // Draw hearts
+                drawHeart(heartLx, heartLy, heartSize, HEARTCOLOR);
                 if (!cyclops)
                 {
-                    drawHeart(heartRx, heartRy, heartSizeR, HEARTCOLOR);
+                    drawHeart(heartRx, heartRy, heartSize, HEARTCOLOR);
                 }
             }
             else
             {
                 // Transforming back from hearts (50% to 100% of animation)
-                float transformProgress = (1.0f - (progress - 0.5f) * 2.0f); // Scale from 1.0 to 0.0
+                float transformProgress = 1.0f - ((progress - 0.5f) * 2.0f); // Scale from 1.0 to 0.0
+                
+                // Calculate heart positions
+                int centerX = screenWidth / 2;
+                int centerY = screenHeight / 2;
+                
+                // Heart size based on transformation progress
+                int heartSize = eyeLwidthDefault * transformProgress;
+                
+                // Position hearts at the same location as eyes
+                int heartLx = eyeLx + (eyeLwidthCurrent - heartSize) / 2;
+                int heartLy = eyeLy + (eyeLheightCurrent - heartSize) / 2;
+                int heartRx = eyeRx + (eyeRwidthCurrent - heartSize) / 2;
+                int heartRy = eyeRy + (eyeRheightCurrent - heartSize) / 2;
                 
                 // Draw hearts with decreasing size
-                int heartSizeL = eyeLwidthDefault * transformProgress;
-                int heartSizeR = eyeRwidthDefault * transformProgress;
-                
-                // Position hearts at center
-                int heartLx = (screenWidth - heartSizeL) / 2 - (cyclops ? 0 : spaceBetweenDefault/2 + heartSizeL/2);
-                int heartLy = (screenHeight - heartSizeL) / 2;
-                int heartRx = (screenWidth - heartSizeR) / 2 + (cyclops ? 0 : spaceBetweenDefault/2 + heartSizeR/2);
-                int heartRy = (screenHeight - heartSizeR) / 2;
-                
+                drawHeart(heartLx, heartLy, heartSize, HEARTCOLOR);
                 if (!cyclops)
                 {
-                    drawHeart(heartLx, heartLy, heartSizeL, HEARTCOLOR);
-                    drawHeart(heartRx, heartRy, heartSizeR, HEARTCOLOR);
-                }
-                else
-                {
-                    drawHeart((screenWidth - heartSizeL) / 2, heartLy, heartSizeL, HEARTCOLOR);
+                    drawHeart(heartRx, heartRy, heartSize, HEARTCOLOR);
                 }
             }
         }
