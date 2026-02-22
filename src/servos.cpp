@@ -26,8 +26,8 @@ int ServoHelper::getCurrentServoPos(int servo_ind){
 
 void ServoHelper::attachServos()
 {
-    // servo_main->attach(SER_MAIN_PIN, USMIN, USMAX);
-    servo_main->attach(SER_MAIN_PIN);
+    servo_main->attach(SER_MAIN_PIN, USMIN, USMAX);
+    // servo_main->attach(SER_MAIN_PIN);
     // servo_left_back.attach(SER_LEFT_BACK_PIN, USMIN, USMAX);
     // servo_right_back.attach(SER_RIGHT_BACK_PIN, USMIN, USMAX);
     // servo_right_front.attach(SER_RIGHT_FRONT_PIN, USMIN, USMAX);    
@@ -49,6 +49,10 @@ void ServoHelper::testServos(){
     this->setTargetPosAndSpeed(SER_MAIN,160,2);
     delay(2000);
     this->setTargetPosAndSpeed(SER_MAIN,90,2);
+}
+
+void ServoHelper::HeartAnimMove(){
+    
 }
 
 void ServoHelper::setTargetPosAndSpeed(int servo_ind, int pos, int _speed)

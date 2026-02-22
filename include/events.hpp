@@ -42,6 +42,7 @@ public:
     static void StartTouchThread(void *_this);
     void TouchTask();
     void TouchEvent();
+    void TouchTopLostAttn();
     // static void I2CReciveThread(void *_this);
     // void I2CReciveTask();
 

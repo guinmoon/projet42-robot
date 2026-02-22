@@ -43,7 +43,7 @@ void setup()
 
 void loop()
 {
-    Serial.println("Hello");
+    Serial.println("alive");
 
     delay(1000);
 }

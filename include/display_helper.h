@@ -108,6 +108,7 @@ public:
     void HeartAnimation();
     void LookUp();
     void Confused();
+    void Laugh();
 
     // DisplayHelper();
     static void GIFDraw(GIFDRAW *pDraw);

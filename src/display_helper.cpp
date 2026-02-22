@@ -159,6 +159,10 @@ void DisplayHelper::LookUp(){
     luluEyes->setPosition(N);
 }
 
+void DisplayHelper::Laugh(){
+    luluEyes->anim_laugh();
+}
+
 void DisplayHelper::DrawBatteryThread(void* _this){
     ((DisplayHelper *)_this)->DrawBatteryTask();
     vTaskDelete(NULL);

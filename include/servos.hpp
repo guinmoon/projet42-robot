@@ -50,6 +50,7 @@ public:
     // void setTailMaxCount(int count);
 
     void testServos();
+    void HeartAnimMove();
 
 };
 

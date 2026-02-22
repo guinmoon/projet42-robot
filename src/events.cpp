@@ -36,13 +36,18 @@ void Proj42Events::TouchTask(){
         }
         auto currentTime = millis();
         if (touchTopLast!= 0  && currentTime - touchTopLast > TOUCH_TOP_LOST_INTERVAL_MS){
-            touchTopLast = 0;
-            touchTopCount = 0;
+            TouchTopLostAttn();
         }
         delay(100);
     }
 }
 
+void Proj42Events::TouchTopLostAttn(){
+    touchTopLast = 0;
+    if (touchTopCount>=5)
+        proj42->displayHelper->Laugh();
+    touchTopCount = 0;
+}
 
 void Proj42Events::TouchEvent(){
     touchTopCount++;    
