@@ -4,9 +4,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Arduino.h>
-
 class Proj42;
-
 class WebServerManager {
 private:
     WebServer server;
@@ -26,6 +24,8 @@ private:
     // Вспомогательные методы
     String getJsonStatus();
     String getCurrentTime();
+    void startSoftAP();  // Новый метод для запуска/восстановления AP
+    void stopSoftAP();   // Новый метод для остановки AP
     
 public:
     WebServerManager();
@@ -34,7 +34,7 @@ public:
     void handleClient();
     bool getConnectedStatus();
     void checkWiFiConnection();
-    static void StartWebServerThread(void *_this);
+     static void StartWebServerThread(void *_this);
     void WebServerTask();
 };
 

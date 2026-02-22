@@ -4,6 +4,6 @@
 #include <Arduino.h>
 
 // HTML страница для настройки WiFi
-extern const char* loginPage;
+extern const char loginPage[];
 
 #endif
