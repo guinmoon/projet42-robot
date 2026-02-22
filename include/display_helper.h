@@ -53,7 +53,7 @@ public:
         panel_cfg.memory_height = 240; // Physical height of the panel
         panel_cfg.panel_width = 240;   // Resolution width
         panel_cfg.panel_height = 240;  // Resolution height
-        panel_cfg.offset_y = 0;        
+        panel_cfg.offset_y = -80;            
         panel_cfg.readable = true;
         panel_cfg.invert = true;
         panel_cfg.rgb_order = false;
@@ -104,6 +104,11 @@ public:
     static AnimatedGIF gif;
     // static DigitalRainAnimation<LGFX_MyDisplay> matrix_effect;    
     DisplayHelper(Proj42 *_proj42);
+
+    void HeartAnimation();
+    void LookUp();
+    void Confused();
+
     // DisplayHelper();
     static void GIFDraw(GIFDRAW *pDraw);
     static void TFTDraw(int x, int y, int w, int h, uint16_t *lBuf);
@@ -138,6 +143,7 @@ public:
     // static void LvglDispFlush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
     void SetEyePosition(int x, int y);
     void setIdleMode(bool enable);
+    
 };
 
 // extern DisplayHelper displayHelper;

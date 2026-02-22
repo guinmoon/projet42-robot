@@ -3,6 +3,8 @@
 
 #include "global_def.h"
 #include "display_helper.h"
+#include "events.hpp"
+#include "servos.hpp"
 
 
 
@@ -12,7 +14,11 @@ private:
     static Proj42* instance;
 public:
     
+    int topTouchCount = 0;
+
     DisplayHelper* displayHelper;
+    Proj42Events* eventsHelper;
+    ServoHelper* servoHelper;
     // GyroHelper* gyroHelper;
     // AudioHelper* audioHelper;
     // LuLuCharacter* luluCharacter;

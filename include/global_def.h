@@ -1,6 +1,8 @@
 
 #define WIRE Wire
 
+#define TOUCH_PIN 35
+
 #define LULU_SLAVE_ADDRESS 8
 
 #define AUDIO_ON 1

@@ -6,7 +6,7 @@
 #include <mutex>
 #include <Wire.h>
 
-
+class Proj42;
 
 class Proj42Events
 {
@@ -15,19 +15,17 @@ private:
     std::mutex i2c_mutex;
     bool _reciveSuspended = false;
     bool _isCommandFinished = true;
-
+    static Proj42 *proj42;    
 
 public:
-
+    int touchTopCount = 0;
+    unsigned long touchTopLast = 0; 
     // bool IsCommandFinished()
     // {
     //     return _isCommandFinished;
     // }
 
-    Proj42Events()
-    {
-        
-    }
+    Proj42Events(Proj42* _proj42);
 
     // void sendCommand(int command);
 
@@ -41,7 +39,9 @@ public:
 
     // void commandConfirmTask();
 
-    void StartTouchThread();
+    static void StartTouchThread(void *_this);
+    void TouchTask();
+    void TouchEvent();
     // static void I2CReciveThread(void *_this);
     // void I2CReciveTask();
 
@@ -49,5 +49,8 @@ public:
 
     ~Proj42Events();
 };
+
+
+#define TOUCH_TOP_LOST_INTERVAL_MS 2000
 
 #endif

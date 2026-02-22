@@ -83,7 +83,7 @@ void DisplayHelper::showSleepAnimation()
 void DisplayHelper::InitDisplay()
 {
     // gfx->init();
-    gfx->setRotation(1);
+    gfx->setRotation(3);
 
     if (!gfx->init())
     {
@@ -137,6 +137,26 @@ void DisplayHelper::InitDisplay()
     // pFrameBuffer = (uint8_t *)heap_caps_malloc(280 * 240 * sizeof(uint16_t), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)ps_malloc(280 * 240 * sizeof(uint32_t));
     // usTemp = (uint16_t *)ps_malloc(sizeof(uint16_t)*280);
+}
+
+void DisplayHelper::HeartAnimation(){
+    luluEyes->setIdleMode(OFF, 2, 2);
+    luluEyes->setAutoblinker(OFF, 3, 2);
+    luluEyes->cleanEyes();
+    luluEyes->anim_hearts();
+    luluEyes->cleanEyes();
+    luluEyes->setAutoblinker(ON, 3, 2);
+    luluEyes->setIdleMode(ON, 2, 2);
+    // luluEyes->setAutoblinker(ON, 3, 2); // Start auto blinker animation cycle -> bool active, int interval, int variation -> turn on/off, set interval between each blink in full seconds, set range for random interval variation in full seconds
+    // luluEyes->setIdleMode(ON, 2, 2);
+}
+
+void DisplayHelper::Confused(){
+    luluEyes->anim_confused();
+}
+
+void DisplayHelper::LookUp(){
+    luluEyes->setPosition(N);
 }
 
 void DisplayHelper::DrawBatteryThread(void* _this){
