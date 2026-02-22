@@ -5,7 +5,7 @@
 #include "display.h"
 #include "events.hpp"
 #include "servos.hpp"
-
+#include "WebServerManager.h"
 
 
 class Proj42
@@ -19,6 +19,7 @@ public:
     DisplayHelper* displayHelper;
     Proj42Events* eventsHelper;
     ServoHelper* servoHelper;
+    WebServerManager* webServer;
     // GyroHelper* gyroHelper;
     // AudioHelper* audioHelper;
     // LuLuCharacter* luluCharacter;

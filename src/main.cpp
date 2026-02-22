@@ -1,4 +1,4 @@
-// #include <ESP32Servo.h>
+// #include <WiFi.h>
 #include "proj42.hpp"
 
 // static const int servoPin = 19;
@@ -31,8 +31,9 @@ void setup()
 
     Serial.begin(115200);
 
-    // servo1.attach(servoPin);
-    // ServoInit();
+    // WiFi.mode(WIFI_MODE_AP);
+    // delay(100);
+    // WiFi.softAP("Proj42_Config", "12345678", 1, 0, 4);
 
     proj42.Init();
     // displayHelper = new DisplayHelper();

@@ -10,7 +10,7 @@
 #define BGCOLOR 0          // background and overlays
 #define MAINCOLOR TFT_BLUE // drawings
 #define HEARTCOLOR TFT_RED // heart color
-// For mood type switch
+// For mood type switch 
 #define DEFAULT 0
 #define TIRED 1
 #define ANGRY 2

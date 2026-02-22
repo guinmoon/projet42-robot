@@ -12,6 +12,7 @@ Proj42::Proj42()
     displayHelper = new DisplayHelper(this);
     eventsHelper = new Proj42Events(this);
     servoHelper = new ServoHelper(this);
+   
     // luluCharacter = new LuLuCharacter(this);
     // gyroHelper = new GyroHelper(this);
     // touchHelper = new TouchHelper(this);
@@ -30,6 +31,10 @@ void Proj42::Init()
     // configHelper->LoadConfig("/config.json");
     // batteryHelper->InitBattery();
     displayHelper->InitDisplay();
+    delay(1000);
+    webServer = new WebServerManager(this);
+
+
     // servoHelper->testServos();    
     // touchHelper->InitTouch();    
     // gyroHelper->InitGyro();
