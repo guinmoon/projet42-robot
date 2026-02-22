@@ -2,7 +2,7 @@
  * Copyright (C) 2025 Artem Savkin
  
  */
-#include "display_helper.h"
+#include "display.h"
 #include "global_def.h"
 #ifndef _LULU_EYES_H
 #define _LULU_EYES_H

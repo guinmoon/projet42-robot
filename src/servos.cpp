@@ -52,7 +52,12 @@ void ServoHelper::testServos(){
 }
 
 void ServoHelper::HeartAnimMove(){
-    
+    auto curPos = currentPos[SER_MAIN];
+    this->setTargetPosAndSpeed(SER_MAIN,curPos-20,1);
+    delay(1500);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos+20,1);
+    delay(700);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos,1);
 }
 
 void ServoHelper::setTargetPosAndSpeed(int servo_ind, int pos, int _speed)
@@ -78,22 +83,6 @@ void ServoHelper::applyServoPos(int servo_ind, int pos)
     //     servo_left_back.write(pos);
     //     // servo_left_back.detach();
     //     break;
-    // case SER_RIGHT_FRONT:
-    //     // servo_right_front.attach(SER_RIGHT_FRONT_PIN, USMIN, USMAX);
-    //     servo_right_front.write(180 - pos);
-    //     // servo_right_front.detach();
-    //     break;
-    // case SER_RIGHT_BACK:
-    //     // servo_right_back.attach(SER_RIGHT_BACK_PIN, USMIN, USMAX);
-    //     servo_right_back.write(180 - pos);
-    //     // servo_right_back.detach();
-    //     break;
-    // case SER_TAIL:
-    //     // servo_tail.attach(SER_TAIL_PIN, USMIN, USMAX);
-    //     servo_tail.write(pos);
-    //     // servo_tail.detach();
-    //     // Serial.printf("Tail pos: %i\n",pos);
-    //     break;
     }
 }
 
@@ -106,23 +95,11 @@ void ServoHelper::applyServoPos(int servo_ind, int pos)
 void ServoHelper::updateServos()
 {
     unsigned long currentTime = millis(); 
-        
-    // if (currentTime - lastUpdateTime >= SER_UPDATE_INTERVAL)
-    // {
-    //     touched = digitalRead(TOUCH_PIN);
-    //     if (touched != 0)
-    //     {
-    //         Serial.println("Touch ");            
-    //     }
-    // }
     if (currentTime - lastUpdateTime >= SER_UPDATE_INTERVAL)
     {
-        // if (currentTime-getLastPingTime()>=MSEC_UNTIL_SLEEP){
-        //     setLastPingTime(currentTime);
-        //     // pico_sleep(RP_SLEEP_DURATION_SEC);
-        // }
+        
         lastUpdateTime = currentTime;
-        // updateTail();
+        
         for (int i = 0; i < 5; i++)
         {
             if (currentPos[i] < targetPos[i])
@@ -146,15 +123,7 @@ void ServoHelper::updateServos()
             // case SER_LEFT_BACK:
             //     applyServoPos(SER_LEFT_BACK, currentPos[i]);
             //     break;
-            // case SER_RIGHT_BACK:
-            //     applyServoPos(SER_RIGHT_BACK, currentPos[i]);
-            //     break;
-            // case SER_RIGHT_FRONT:
-            //     applyServoPos(SER_RIGHT_FRONT, currentPos[i]);
-            //     break;
-            // case SER_TAIL:
-            //     applyServoPos(SER_TAIL, currentPos[i]);
-            //     break;
+
             }
         }
     }else{

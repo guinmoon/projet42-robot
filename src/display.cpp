@@ -1,4 +1,4 @@
-#include "display_helper.h"
+#include "display.h"
 #include "proj42.hpp"
 #include <eyes_drawer.h>
 #include "global_def.h"
@@ -161,6 +161,12 @@ void DisplayHelper::LookUp(){
 
 void DisplayHelper::Laugh(){
     luluEyes->anim_laugh();
+}
+
+void DisplayHelper::Angry(int t){
+    luluEyes->angry = true;
+    delay(t);
+    luluEyes->angry = false;
 }
 
 void DisplayHelper::DrawBatteryThread(void* _this){

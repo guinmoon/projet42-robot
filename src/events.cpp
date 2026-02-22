@@ -45,7 +45,7 @@ void Proj42Events::TouchTask(){
 void Proj42Events::TouchTopLostAttn(){
     touchTopLast = 0;
     if (touchTopCount>=5)
-        proj42->displayHelper->Laugh();
+        proj42->displayHelper->Angry(1000);
     touchTopCount = 0;
 }
 
@@ -57,9 +57,12 @@ void Proj42Events::TouchEvent(){
     case 5:
         proj42->displayHelper->Confused();
         break;
-    case 14:
-        touchTopCount = 0;
+    case 14:        
+        proj42->displayHelper->HeartAnimation();        
+        break;
+    case 25:        
         proj42->displayHelper->HeartAnimation();
+        proj42->servoHelper->HeartAnimMove();
         break;
     default:
         proj42->displayHelper->LookUp();

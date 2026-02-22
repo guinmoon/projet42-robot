@@ -2,7 +2,7 @@
 #define PROJ42_H
 
 #include "global_def.h"
-#include "display_helper.h"
+#include "display.h"
 #include "events.hpp"
 #include "servos.hpp"
 

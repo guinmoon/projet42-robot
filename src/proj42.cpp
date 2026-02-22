@@ -30,7 +30,7 @@ void Proj42::Init()
     // configHelper->LoadConfig("/config.json");
     // batteryHelper->InitBattery();
     displayHelper->InitDisplay();
-    servoHelper->testServos();    
+    // servoHelper->testServos();    
     // touchHelper->InitTouch();    
     // gyroHelper->InitGyro();
     // audioHelper->InitAudio();

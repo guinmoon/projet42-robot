@@ -109,6 +109,7 @@ public:
     void LookUp();
     void Confused();
     void Laugh();
+    void Angry(int t);
 
     // DisplayHelper();
     static void GIFDraw(GIFDRAW *pDraw);
