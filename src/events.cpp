@@ -44,7 +44,7 @@ void Proj42Events::TouchTask(){
 
 void Proj42Events::TouchTopLostAttn(){
     touchTopLast = 0;
-    if (touchTopCount>=5)
+    if (touchTopCount>=5 && touchTopCount<=14)
         proj42->displayHelper->Angry(1000);
     touchTopCount = 0;
 }
