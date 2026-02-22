@@ -3,7 +3,8 @@
 #include "time.h"
 Proj42 *WebServerManager::proj42;
 
-WebServerManager::WebServerManager(Proj42* _proj42) : server(80),
+WebServerManager::WebServerManager(Proj42* _proj42) : 
+                                       server(80),
                                        isConnected(false),
                                        ntpServer("pool.ntp.org"),
                                        gmtOffset_sec(10800), // +3 часа (Москва)
@@ -55,6 +56,16 @@ void WebServerManager::init() {
     Serial.println("Web server initialized");
     Serial.print("AP IP: ");
     Serial.println(WiFi.softAPIP());
+
+
+    xTaskCreatePinnedToCore(
+            this->StartWebServerThread, /* Task function. */
+            "Task15",           /* name of task. */
+            10000,              /* Stack size of task */
+            this,               /* parameter of the task */
+            tskIDLE_PRIORITY,   /* priority of the task */
+            NULL,               /* Task handle to keep track of created task */
+            1);
 }
 
 void WebServerManager::startSoftAP() {

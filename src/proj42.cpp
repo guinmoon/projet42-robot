@@ -32,7 +32,8 @@ void Proj42::Init()
     // batteryHelper->InitBattery();
     displayHelper->InitDisplay();
     delay(1000);
-    webServer = new WebServerManager(this);
+    webServer = new WebServerManager();
+    webServer->init();
 
 
     // servoHelper->testServos();    
