@@ -4,13 +4,19 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <Arduino.h>
+#include "StorageManager.h"
+
 class Proj42;
+
 class WebServerManager {
 private:
     WebServer server;
     bool isConnected;
     String currentSSID;
     static Proj42* proj42;
+    StorageManager storageManager;
+    bool autoConnectAttempted;
+    
     // NTP настройки
     const char* ntpServer;
     const long gmtOffset_sec;
@@ -20,12 +26,14 @@ private:
     void handleRoot();
     void handleConnect();
     void handleStatus();
+    void handleClearSettings();  // Новый обработчик для очистки настроек
     
     // Вспомогательные методы
     String getJsonStatus();
     String getCurrentTime();
-    void startSoftAP();  // Новый метод для запуска/восстановления AP
-    void stopSoftAP();   // Новый метод для остановки AP
+    void startSoftAP();
+    void stopSoftAP();
+    bool attemptAutoConnect();   // Новый метод для автоматического подключения
     
 public:
     WebServerManager();
@@ -34,8 +42,9 @@ public:
     void handleClient();
     bool getConnectedStatus();
     void checkWiFiConnection();
-     static void StartWebServerThread(void *_this);
-    void WebServerTask();
+    bool tryAutoConnect();    
+    static void StartWebServerThread(void *_this);
+    void WebServerTask();   // Публичный метод для первой попытки подключения
 };
 
 #endif

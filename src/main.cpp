@@ -46,5 +46,5 @@ void loop()
 {
     Serial.println("alive");
 
-    delay(5000);
+    delay(10000);
 }

@@ -4,13 +4,14 @@
 Proj42 *WebServerManager::proj42;
 
 WebServerManager::WebServerManager(Proj42* _proj42) : 
-                                       server(80),
-                                       isConnected(false),
-                                       ntpServer("pool.ntp.org"),
-                                       gmtOffset_sec(10800), // +3 часа (Москва)
-                                       daylightOffset_sec(0){    
+                                    server(80),
+                                    isConnected(false),
+                                    ntpServer("pool.ntp.org"),
+                                    gmtOffset_sec(10800),  // +3 часа (Москва)
+                                    daylightOffset_sec(0),
+                                    autoConnectAttempted(false){    
     proj42 = _proj42;
-    init();   
+    init();       
 }
 
 void WebServerManager::StartWebServerThread(void *_this)
@@ -22,18 +23,20 @@ void WebServerManager::StartWebServerThread(void *_this)
 void WebServerManager::WebServerTask()
 {
     while (true){
-        handleClient();                
-        checkWiFiConnection();        
+        handleClient();
+        checkWiFiConnection(); 
         delay(10);
     }
 }
+
 
 WebServerManager::WebServerManager() : 
     server(80),
     isConnected(false),
     ntpServer("pool.ntp.org"),
     gmtOffset_sec(10800),  // +3 часа (Москва)
-    daylightOffset_sec(0) {
+    daylightOffset_sec(0),
+    autoConnectAttempted(false) {
 }
 
 void WebServerManager::init() {
@@ -47,6 +50,7 @@ void WebServerManager::init() {
     server.on("/", [this]() { this->handleRoot(); });
     server.on("/connect", [this]() { this->handleConnect(); });
     server.on("/status", [this]() { this->handleStatus(); });
+    server.on("/clear", [this]() { this->handleClearSettings(); });  // Новый маршрут
     
     server.begin();
     
@@ -56,8 +60,6 @@ void WebServerManager::init() {
     Serial.println("Web server initialized");
     Serial.print("AP IP: ");
     Serial.println(WiFi.softAPIP());
-
-
     xTaskCreatePinnedToCore(
             this->StartWebServerThread, /* Task function. */
             "Task15",           /* name of task. */
@@ -66,6 +68,13 @@ void WebServerManager::init() {
             tskIDLE_PRIORITY,   /* priority of the task */
             NULL,               /* Task handle to keep track of created task */
             1);
+    // Попытка автоподключения
+    Serial.println("Попытка автоподключения...");
+    if (tryAutoConnect()) {
+        Serial.println("Автоподключение успешно выполнено");
+    } else {
+        Serial.println("Автоподключение не удалось или нет сохраненных настроек");
+    }
 }
 
 void WebServerManager::startSoftAP() {
@@ -107,7 +116,10 @@ void WebServerManager::handleConnect() {
             if (WiFi.status() == WL_CONNECTED) {
                 isConnected = true;
                 currentSSID = newSSID;
-                stopSoftAP();  // Отключаем AP после успешного подключения
+                
+                // Сохраняем настройки
+                storageManager.saveWiFiSettings(newSSID.c_str(), newPass.c_str());
+                
                 Serial.println("Успешно подключено к WiFi. IP: " + WiFi.localIP().toString());
                 server.send(200, "text/html", 
                     "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Успех</title></head>"
@@ -115,7 +127,7 @@ void WebServerManager::handleConnect() {
                     "<h2 style='color:green;'>Успешно подключено!</h2>"
                     "<p>Подключено к: " + newSSID + "</p>"
                     "<p>IP адрес: " + WiFi.localIP().toString() + "</p>"
-                    "<p>Теперь подключитесь к вашей WiFi сети и используйте этот IP для доступа (если нужно).</p>"
+                    "<p><a href='/clear'>Очистить сохраненные настройки</a></p>"
                     "<a href='/'>Назад</a>"
                     "</body></html>");
             } else {
@@ -140,6 +152,21 @@ void WebServerManager::handleStatus() {
     Serial.println("Handling status request");
     String jsonResponse = getJsonStatus();
     server.send(200, "application/json", jsonResponse);
+}
+
+void WebServerManager::handleClearSettings() {
+    storageManager.clearWiFiSettings();
+    isConnected = false;
+    WiFi.disconnect();
+    startSoftAP();  // Убедимся, что AP работает
+    
+    server.send(200, "text/html", 
+        "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Настройки очищены</title></head>"
+        "<body style='font-family:Arial;text-align:center;padding:50px;'>"
+        "<h2 style='color:green;'>Настройки очищены!</h2>"
+        "<p>Сохраненные настройки WiFi удалены.</p>"
+        "<a href='/'>Назад</a>"
+        "</body></html>");
 }
 
 String WebServerManager::getJsonStatus() {
@@ -183,4 +210,43 @@ void WebServerManager::checkWiFiConnection() {
             startSoftAP();  // Восстанавливаем AP при потере подключения
         }
     }
+}
+
+bool WebServerManager::tryAutoConnect() {
+    if (autoConnectAttempted) {
+        return isConnected;
+    }
+    
+    autoConnectAttempted = true;
+    
+    if (storageManager.hasSavedSettings()) {
+        WiFiSettings settings = storageManager.loadWiFiSettings();
+        
+        if (settings.isValid) {
+            Serial.println("Найдены сохраненные настройки. Попытка автоподключения к: " + String(settings.ssid));
+            
+            WiFi.begin(settings.ssid, settings.password);
+            
+            // Ждем подключения (максимум 10 секунд)
+            unsigned long startTime = millis();
+            while (WiFi.status() != WL_CONNECTED && millis() - startTime < 10000) {
+                delay(500);
+                Serial.print(".");
+            }
+            
+            if (WiFi.status() == WL_CONNECTED) {
+                isConnected = true;
+                currentSSID = String(settings.ssid);
+                Serial.println("Автоподключение успешно. IP: " + WiFi.localIP().toString());
+                return true;
+            } else {
+                isConnected = false;
+                WiFi.disconnect();
+                Serial.println("Автоподключение не удалось");
+                return false;
+            }
+        }
+    }
+    
+    return false;
 }
