@@ -11,7 +11,7 @@
 LGFX_MyDisplay *DisplayHelper::gfx;
 LuLuEyes *DisplayHelper::luluEyes;
 LGFX_Sprite *DisplayHelper::eyesSprite;
-LGFX_Sprite *DisplayHelper::batterySprite;
+LGFX_Sprite *DisplayHelper::timeSprite;
 
 AnimatedGIF DisplayHelper::gif;
 
@@ -36,9 +36,9 @@ DisplayHelper::DisplayHelper(Proj42 *_proj42)
 {
     proj42 = _proj42;
     gfx = new LGFX_MyDisplay();
-    batterySprite = new LGFX_Sprite(gfx);
-    batterySprite->setPsram(true);
-    batterySprite->createSprite(120, 40);
+    timeSprite = new LGFX_Sprite(gfx);
+    timeSprite->setPsram(false);
+    timeSprite->createSprite(240, 100);
 }
 
 void DisplayHelper::stopSleepAnimation()
@@ -170,20 +170,20 @@ void DisplayHelper::Angry(int t){
     luluEyes->angry = false;
 }
 
-void DisplayHelper::DrawBatteryThread(void* _this){
-    ((DisplayHelper *)_this)->DrawBatteryTask();
-    vTaskDelete(NULL);
-}
+// void DisplayHelper::DrawBatteryThread(void* _this){
+//     ((DisplayHelper *)_this)->DrawBatteryTask();
+//     vTaskDelete(NULL);
+// }
 
-void DisplayHelper::DrawBatteryTask(){
-    drawBatteryheart();
-    while (1){ 
-        delay(1000);
-        // if (!playGif &&  eyesPaused)
-        //    continue;        
-        drawBatteryheart();
-    }
-}
+// void DisplayHelper::DrawBatteryTask(){
+//     drawBatteryheart();
+//     while (1){ 
+//         delay(1000);
+//         // if (!playGif &&  eyesPaused)
+//         //    continue;        
+//         drawBatteryheart();
+//     }
+// }
 
 void DisplayHelper::setIdleMode(bool enable){
     if (enable){
@@ -196,12 +196,13 @@ void DisplayHelper::setIdleMode(bool enable){
 
 void DisplayHelper::pauseEyes()
 {
-    this->eyesPaused = true;
+    this->showEyes = false;
+    this->gfx->clearDisplay();
 }
 
 void DisplayHelper::resumeEyes()
 {
-    this->eyesPaused = false;
+    this->showEyes = true;
 }
 
 
@@ -214,16 +215,44 @@ void DisplayHelper::StartEyesUpdateThread(void *_this)
 
 void DisplayHelper::EyesUpdateTask()
 {
+    int dtShows = 0;
     while (true)
     {
-        if (eyesPaused)
+        
+        if (showEyes)
         {
-            delay(100);
-            continue;
+            luluEyes->update();
+            delay(30);                        
         }
-        luluEyes->update();
-        delay(30);
+        if (showTime){
+            // luluEyes->cleanEyes();
+            dtShows++;
+            if (dtShows >= 10){
+                ShowDateTime();
+                dtShows=0;
+            }
+            delay(100); 
+        }
+        if (!showEyes && !showTime){
+            delay(100);
+        }
+        
     }
+}
+
+void DisplayHelper::ShowDateTime(){
+    int bX = 10;
+    int bY = 40;
+    timeSprite->setCursor(bX, bY);
+    timeSprite->setTextColor(TFT_BLUE);
+    timeSprite->setTextSize(7);
+    timeSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);
+    if (proj42->webServer != nullptr){
+        timeSprite->println(proj42->webServer->timeStr);
+        timeSprite->pushSprite(0,0);
+    }
+    
+    // gfx->println("00:00");
 }
 
 void DisplayHelper::SetEyePosition(int x, int y)

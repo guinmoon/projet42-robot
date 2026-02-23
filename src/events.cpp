@@ -35,23 +35,40 @@ void Proj42Events::TouchTask(){
             this->TouchEvent();
         }
         auto currentTime = millis();
-        if (touchTopLast!= 0  && currentTime - touchTopLast > TOUCH_TOP_LOST_INTERVAL_MS){
+        if (touchTopLastT!= 0  && currentTime - touchTopLastT > TOUCH_TOP_LOST_INTERVAL_MS){
             TouchTopLostAttn();
+        }
+        if (lastAttnT!= 0  && currentTime - lastAttnT > LOST_ATTN_INTERVAL_MS){
+            LostAttn();
         }
         delay(100);
     }
 }
 
 void Proj42Events::TouchTopLostAttn(){
-    touchTopLast = 0;
+    touchTopLastT = 0;
     if (touchTopCount>=5 && touchTopCount<=14)
         proj42->displayHelper->Angry(2000);
     touchTopCount = 0;
 }
 
+void Proj42Events::HasAttn(){
+    proj42->displayHelper->showTime = false;
+    lastAttnT = millis();
+    proj42->displayHelper->resumeEyes();    
+}
+
+
+void Proj42Events::LostAttn(){
+    proj42->displayHelper->showTime = true;
+    lastAttnT = 0;
+    proj42->displayHelper->pauseEyes();    
+}
+
 void Proj42Events::TouchEvent(){
+    HasAttn();
     touchTopCount++;    
-    touchTopLast = millis();
+    touchTopLastT = millis();
     switch (touchTopCount)
     {
     case 5:

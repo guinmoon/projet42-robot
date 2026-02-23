@@ -19,7 +19,8 @@ private:
 
 public:
     int touchTopCount = 0;
-    unsigned long touchTopLast = 0; 
+    unsigned long touchTopLastT = 0; 
+    unsigned long lastAttnT = 0; 
     // bool IsCommandFinished()
     // {
     //     return _isCommandFinished;
@@ -43,6 +44,8 @@ public:
     void TouchTask();
     void TouchEvent();
     void TouchTopLostAttn();
+    void HasAttn();
+    void LostAttn();
     // static void I2CReciveThread(void *_this);
     // void I2CReciveTask();
 
@@ -53,5 +56,6 @@ public:
 
 
 #define TOUCH_TOP_LOST_INTERVAL_MS 2000
+#define LOST_ATTN_INTERVAL_MS 15000
 
 #endif

@@ -95,16 +95,23 @@ private:
 public:
     // static Arduino_DataBus *bus;
     // static Arduino_GFX *gfx;
+
+    
+    int weatherType;
+    bool showTime = true;
+    bool showEyes = false;
+
     const int GifPlayTime = 2;    
-    bool eyesPaused = false;
+    
     static LGFX_Sprite *eyesSprite;
-    static LGFX_Sprite *batterySprite;
+    static LGFX_Sprite *timeSprite;
     static LGFX_MyDisplay* gfx;
     static LuLuEyes* luluEyes;
     static AnimatedGIF gif;
     // static DigitalRainAnimation<LGFX_MyDisplay> matrix_effect;    
     DisplayHelper(Proj42 *_proj42);
 
+    void ShowDateTime();
     void HeartAnimation();
     void LookUp();
     void Confused();

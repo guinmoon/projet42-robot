@@ -36,6 +36,10 @@ private:
     bool attemptAutoConnect();   // Новый метод для автоматического подключения
     
 public:
+    char timeStr[15];
+    char dateStr[15];
+    char weatherStr[15];
+
     WebServerManager();
     WebServerManager(Proj42* _proj42);
     void init();

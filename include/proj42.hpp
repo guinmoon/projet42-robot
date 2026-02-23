@@ -16,10 +16,10 @@ public:
     
     int topTouchCount = 0;
 
-    DisplayHelper* displayHelper;
-    Proj42Events* eventsHelper;
-    ServoHelper* servoHelper;
-    WebServerManager* webServer;
+    DisplayHelper* displayHelper = nullptr;
+    Proj42Events* eventsHelper = nullptr;
+    ServoHelper* servoHelper = nullptr;
+    WebServerManager* webServer = nullptr;
     // GyroHelper* gyroHelper;
     // AudioHelper* audioHelper;
     // LuLuCharacter* luluCharacter;

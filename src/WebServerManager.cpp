@@ -22,10 +22,18 @@ void WebServerManager::StartWebServerThread(void *_this)
 
 void WebServerManager::WebServerTask()
 {
+    int i = 0;
     while (true){
         handleClient();
         checkWiFiConnection(); 
-        delay(10);
+        delay(100);
+        i++;
+        if (i>=10)
+        {
+            // if (isConnected)
+            getCurrentTime();
+            i=0;
+        }
     }
 }
 
@@ -41,6 +49,7 @@ WebServerManager::WebServerManager() :
 
 void WebServerManager::init() {
     // Установка режима AP + STA для одновременной работы
+    sprintf(timeStr, "00:00");
     WiFi.mode(WIFI_MODE_APSTA);
     
     // Запуск точки доступа
@@ -184,9 +193,14 @@ String WebServerManager::getJsonStatus() {
 
 String WebServerManager::getCurrentTime() {
     struct tm timeinfo;
+    // Serial.println("get Time -> ");
     if(getLocalTime(&timeinfo)){
         char timeStringBuff[50];
         strftime(timeStringBuff, sizeof(timeStringBuff), "%d.%m.%Y %H:%M:%S", &timeinfo);
+        strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
+        strftime(dateStr, sizeof(dateStr), "%d.%m.%Y", &timeinfo);
+        // Serial.print("TIME: ");
+        // Serial.println(timeStr);
         return String(timeStringBuff);
     } else {
         return "Не удалось получить время";
