@@ -100,18 +100,17 @@ void DisplayHelper::InitDisplay()
 
     luluEyes = new LuLuEyes();    
     eyesSprite = new LGFX_Sprite(gfx);
-    eyesSprite->setPsram(false);    
+    eyesSprite->setPsram(true);    
     eyesSprite->createSprite(gfx->width(), gfx->height() - EYEBORDER * 2);        
     luluEyes->begin(gfx->width(), gfx->height() - EYEBORDER * 2, eyesSprite); // screen-width, screen-height, max framerate
     // eyesSprite->createSprite(gfx->width(), gfx->height() );        
     // luluEyes->begin(gfx->width(), gfx->height() , eyesSprite);
 
     // Define some automated eyes behaviour
-    luluEyes->anim_hearts();
+    // luluEyes->anim_hearts();
     // luluEyes->anim_catEyes();
     luluEyes->setAutoblinker(ON, 3, 2); // Start auto blinker animation cycle -> bool active, int interval, int variation -> turn on/off, set interval between each blink in full seconds, set range for random interval variation in full seconds
-    luluEyes->setIdleMode(ON, 2, 2);
-    
+    luluEyes->setIdleMode(ON, 2, 2);    
     luluEyes->setSpacebetween(40);
 
     InitMatrixAnimation();
@@ -263,10 +262,10 @@ void DisplayHelper::DrawDateTime(){
 
 void DisplayHelper::ShowClock(int delay1)
 {
-    showTime = false;
-    showEyes = false;
+    showEyes = false;    
+    showTime = false;    
     showMatrixAnimation = true;
-    vTaskDelay(pdMS_TO_TICKS(delay1));
+    vTaskDelay(pdMS_TO_TICKS(delay1));        
     showMatrixAnimation = false;
     vTaskDelay(pdMS_TO_TICKS(100));
     showTime = true;
