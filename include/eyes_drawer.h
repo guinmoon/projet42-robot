@@ -8,7 +8,7 @@
 #define _LULU_EYES_H
 // Usage of monochrome display colors
 #define BGCOLOR 0          // background and overlays
-#define MAINCOLOR TFT_BLUE // drawings
+#define MAINCOLOR TFT_GREEN // drawings
 #define HEARTCOLOR TFT_RED // heart color
 // For mood type switch 
 #define DEFAULT 0

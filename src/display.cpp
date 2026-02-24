@@ -4,6 +4,7 @@
 #include "global_def.h"
 #include "FFat.h"
 
+
 // Arduino_DataBus *DisplayHelper::bus = new Arduino_ESP32SPI(LCD_DC, LCD_CS, LCD_SCK, LCD_MOSI);
 // Arduino_GFX *DisplayHelper::gfx = new Arduino_ST7789(bus, LCD_RST /* RST */,
 //                                                      1 /* rotation */, true /* IPS */, LCD_HEIGHT, LCD_WIDTH, 0, 20, 0, 0);
@@ -15,8 +16,7 @@ LGFX_Sprite *DisplayHelper::timeSprite;
 
 AnimatedGIF DisplayHelper::gif;
 
-// bool DisplayHelper::showMatrixAnimation = false;
-// DigitalRainAnimation<LGFX_MyDisplay> DisplayHelper::matrix_effect = DigitalRainAnimation<LGFX_MyDisplay>();
+DigitalRainAnimation<LGFX_MyDisplay> DisplayHelper::matrix_effect = DigitalRainAnimation<LGFX_MyDisplay>();
 Proj42 *DisplayHelper::proj42;
 int DisplayHelper::xOffset = 0;
 int DisplayHelper::yOffset = 0;
@@ -113,6 +113,9 @@ void DisplayHelper::InitDisplay()
     luluEyes->setIdleMode(ON, 2, 2);
     
     luluEyes->setSpacebetween(40);
+
+    InitMatrixAnimation();
+    showMatrixAnimation = true;
     // luluEyes->setHeartMode(true, 3000);
     // pauseEyes = true;
     xTaskCreatePinnedToCore(
@@ -125,15 +128,8 @@ void DisplayHelper::InitDisplay()
         0);
     
 
-    //  xTaskCreatePinnedToCore(
-    //     DrawBatteryThread, /* Task function. */
-    //     "Task131",                     /* name of task. */
-    //     10000,                       /* Stack size of task */
-    //     this,                        /* parameter of the task */
-    //     tskIDLE_PRIORITY,       /* priority of the task */
-    //     NULL,                      /* Task handle to keep track of created task */
-    //     0);   
-        
+    ShowClock(7000);
+
     // pTurboBuffer = (uint8_t *)heap_caps_malloc(TURBO_BUFFER_SIZE + (280 * 240), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)heap_caps_malloc(280 * 240 * sizeof(uint16_t), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)ps_malloc(280 * 240 * sizeof(uint32_t));
@@ -202,7 +198,10 @@ void DisplayHelper::pauseEyes()
 
 void DisplayHelper::resumeEyes()
 {
-    this->showEyes = true;
+    showTime = false;
+    vTaskDelay(pdMS_TO_TICKS(100));
+    this->gfx->clearDisplay();
+    showEyes = true;
 }
 
 
@@ -228,32 +227,51 @@ void DisplayHelper::EyesUpdateTask()
             // luluEyes->cleanEyes();
             dtShows++;
             if (dtShows >= 10){
-                ShowDateTime();
+                DrawDateTime();
                 dtShows=0;
             }
             delay(100); 
         }
-        if (!showEyes && !showTime){
+        if (showMatrixAnimation){
+            matrix_effect.loop();
+            delay(20);
+        }
+        if (!showEyes && !showTime && !showMatrixAnimation){
             delay(100);
         }
         
     }
 }
 
-void DisplayHelper::ShowDateTime(){
+void DisplayHelper::DrawDateTime(){
     int bX = 10;
-    int bY = 40;
+    int bY = 10;
+    int sX = 0;
+    int sY = 80;
+    timeSprite->setFont(&fonts::FreeMonoBold24pt7b);
     timeSprite->setCursor(bX, bY);
-    timeSprite->setTextColor(TFT_BLUE);
-    timeSprite->setTextSize(7);
+    timeSprite->setTextColor(TFT_GREEN);
+    timeSprite->setTextSize(1.5);
     timeSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);
     if (proj42->webServer != nullptr){
         timeSprite->println(proj42->webServer->timeStr);
-        timeSprite->pushSprite(0,0);
+        timeSprite->pushSprite(sX,sY);
     }
     
     // gfx->println("00:00");
 }
+
+void DisplayHelper::ShowClock(int delay1)
+{
+    showTime = false;
+    showEyes = false;
+    showMatrixAnimation = true;
+    vTaskDelay(pdMS_TO_TICKS(delay1));
+    showMatrixAnimation = false;
+    vTaskDelay(pdMS_TO_TICKS(100));
+    showTime = true;
+}
+
 
 void DisplayHelper::SetEyePosition(int x, int y)
 {
@@ -557,15 +575,15 @@ void DisplayHelper::PlayInfiniteTask()
 //         0);
 // }
 
-// void DisplayHelper::StopMatrixAnimation()
-// {
-//     showMatrixAnimation = false;
-// }
+void DisplayHelper::StopMatrixAnimation()
+{
+    showMatrixAnimation = false;
+}
 
-// void DisplayHelper::InitMatrixAnimation()
-// {
-//     matrix_effect.init(gfx);
-// }
+void DisplayHelper::InitMatrixAnimation()
+{
+    matrix_effect.init(gfx);    
+}
 
 // void DisplayHelper::LvglDispFlush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 // {

@@ -8,11 +8,11 @@
 // #include <TFT_eSPI.h>
 #include <Wire.h>
 #include <AnimatedGIF.h>
-#include "LittleFS.h"
+// #include "LittleFS.h"
 #include "global_def.h"
 // #include "battery_helper.h"
 #include <LovyanGFX.hpp>
-// #include <DigitalRainAnimation.hpp>
+#include <DigitalRainAnimation.hpp>
 
 
 
@@ -98,8 +98,9 @@ public:
 
     
     int weatherType;
-    bool showTime = true;
+    bool showTime = false;
     bool showEyes = false;
+    bool showMatrixAnimation = false;
 
     const int GifPlayTime = 2;    
     
@@ -108,15 +109,16 @@ public:
     static LGFX_MyDisplay* gfx;
     static LuLuEyes* luluEyes;
     static AnimatedGIF gif;
-    // static DigitalRainAnimation<LGFX_MyDisplay> matrix_effect;    
+    static DigitalRainAnimation<LGFX_MyDisplay> matrix_effect;    
     DisplayHelper(Proj42 *_proj42);
 
-    void ShowDateTime();
+    void DrawDateTime();
     void HeartAnimation();
     void LookUp();
     void Confused();
     void Laugh();
     void Angry(int t);
+    void ShowClock(int delay1);
 
     // DisplayHelper();
     static void GIFDraw(GIFDRAW *pDraw);
@@ -148,7 +150,7 @@ public:
     void StopMatrixAnimation();
     // static void MatrixAnimationThread(void *_this);
     // static void drawHeart(int x, int y, uint16_t color);
-    // static bool showMatrixAnimation;
+    
     // static void LvglDispFlush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
     void SetEyePosition(int x, int y);
     void setIdleMode(bool enable);

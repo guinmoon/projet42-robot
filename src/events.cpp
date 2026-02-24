@@ -53,16 +53,18 @@ void Proj42Events::TouchTopLostAttn(){
 }
 
 void Proj42Events::HasAttn(){
-    proj42->displayHelper->showTime = false;
+    
     lastAttnT = millis();
-    proj42->displayHelper->resumeEyes();    
+    if (!proj42->displayHelper->showEyes)
+        proj42->displayHelper->resumeEyes();    
 }
 
 
 void Proj42Events::LostAttn(){
-    proj42->displayHelper->showTime = true;
+    // proj42->displayHelper->showTime = true;
     lastAttnT = 0;
-    proj42->displayHelper->pauseEyes();    
+    proj42->displayHelper->ShowClock(5000);
+    // proj42->displayHelper->pauseEyes();    
 }
 
 void Proj42Events::TouchEvent(){
