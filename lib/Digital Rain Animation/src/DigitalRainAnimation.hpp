@@ -116,6 +116,9 @@ private:
 
     line_pos[lineNum] += line_speed[lineNum];
 
+    if (drawDateTime && timeStr!=nullptr)
+      DrawDateTime();
+
     if (line_pos[lineNum] >= height) {
       lineUpdate(lineNum);
     }
@@ -216,6 +219,33 @@ private:
 
 public:
   DigitalRainAnimation() {}
+
+  char* timeStr = nullptr;
+  bool drawDateTime = false;
+
+  void DrawDateTime(){  
+    if (timeStr == nullptr)
+      return;
+    int bX = 10;
+    int bY = 10;
+    int sX = 0;
+    int sY = 80;
+    auto curfont = _gfx->getFont();
+    auto cursize = _gfx->getTextSizeX();
+    auto cX = _gfx->getCursorX();
+    auto cY = _gfx->getCursorY();
+    _gfx->setFont(&fonts::FreeMonoBold24pt7b);
+    _gfx->setCursor(bX, bY);
+    _gfx->setTextColor(TFT_GREEN);
+    _gfx->setTextSize(1.5);
+    _gfx->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);
+    _gfx->println(timeStr);  
+
+    _gfx->setFont(curfont);
+    _gfx->setTextSize(cursize);
+    _gfx->setCursor(cX, cY);
+    // gfx->println("00:00");
+  }
 
   //initialization
   void init(T* gfx ,bool biggerText = false, bool alphabetOnly = false) {

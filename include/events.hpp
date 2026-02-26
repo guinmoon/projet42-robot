@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "global_def.h"
 #include <mutex>
-#include <Wire.h>
+// #include <Wire.h>
 
 class Proj42;
 

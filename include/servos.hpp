@@ -11,7 +11,7 @@ class ServoHelper
 {
 private:
     static Proj42* proj42;
-    
+    const int SERVOS_COUNT = 1;
     Servo* servo_main;
     // Servo servo_left_back;
     // Servo servo_right_front;
@@ -51,6 +51,10 @@ public:
 
     void testServos();
     void HeartAnimMove();
+
+    void WaitAndDetach();
+
+    static void WaitAndDetachThread(void *_this);
 
 };
 

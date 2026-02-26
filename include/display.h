@@ -6,7 +6,7 @@
 
 // #include <lvgl.h>
 // #include <TFT_eSPI.h>
-#include <Wire.h>
+// #include <Wire.h>
 #include <AnimatedGIF.h>
 // #include "LittleFS.h"
 #include "global_def.h"

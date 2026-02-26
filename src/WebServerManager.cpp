@@ -11,6 +11,7 @@ WebServerManager::WebServerManager(Proj42* _proj42) :
                                     daylightOffset_sec(0),
                                     autoConnectAttempted(false){    
     proj42 = _proj42;
+    sprintf(timeStr, "00:00");
     init();       
 }
 
@@ -49,7 +50,7 @@ WebServerManager::WebServerManager() :
 
 void WebServerManager::init() {
     // Установка режима AP + STA для одновременной работы
-    sprintf(timeStr, "00:00");
+    
     WiFi.mode(WIFI_MODE_APSTA);
     
     // Запуск точки доступа
@@ -78,6 +79,7 @@ void WebServerManager::init() {
             NULL,               /* Task handle to keep track of created task */
             1);
     // Попытка автоподключения
+    sprintf(timeStr, "00:00");
     Serial.println("Попытка автоподключения...");
     if (tryAutoConnect()) {
         Serial.println("Автоподключение успешно выполнено");

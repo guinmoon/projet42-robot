@@ -160,8 +160,8 @@ void DisplayHelper::Laugh(){
 }
 
 void DisplayHelper::Angry(int t){
-    luluEyes->angry = true;
-    delay(t);
+    luluEyes->angry = true;    
+    vTaskDelay(pdMS_TO_TICKS(t));
     luluEyes->angry = false;
 }
 
@@ -198,9 +198,13 @@ void DisplayHelper::pauseEyes()
 void DisplayHelper::resumeEyes()
 {
     showTime = false;
+    showMatrixAnimation = false;       
+    gfx->fillRect(0,0, 240, 80, TFT_BLACK);   
+    gfx->fillRect(0,160, 240, 240, TFT_BLACK);
     vTaskDelay(pdMS_TO_TICKS(100));
-    this->gfx->clearDisplay();
-    showEyes = true;
+    // this->gfx->clearDisplay();
+    showEyes = true;    
+    
 }
 
 
@@ -220,7 +224,7 @@ void DisplayHelper::EyesUpdateTask()
         if (showEyes)
         {
             luluEyes->update();
-            delay(30);                        
+            vTaskDelay(pdMS_TO_TICKS(30));                       
         }
         if (showTime){
             // luluEyes->cleanEyes();
@@ -229,20 +233,24 @@ void DisplayHelper::EyesUpdateTask()
                 DrawDateTime();
                 dtShows=0;
             }
-            delay(100); 
+            vTaskDelay(pdMS_TO_TICKS(100));
         }
         if (showMatrixAnimation){
             matrix_effect.loop();
-            delay(20);
+            vTaskDelay(pdMS_TO_TICKS(20));
         }
         if (!showEyes && !showTime && !showMatrixAnimation){
-            delay(100);
+            vTaskDelay(pdMS_TO_TICKS(100));
         }
         
     }
 }
 
 void DisplayHelper::DrawDateTime(){
+        
+    if (proj42->webServer == nullptr)
+        return;
+    
     int bX = 10;
     int bY = 10;
     int sX = 0;
@@ -251,11 +259,10 @@ void DisplayHelper::DrawDateTime(){
     timeSprite->setCursor(bX, bY);
     timeSprite->setTextColor(TFT_GREEN);
     timeSprite->setTextSize(1.5);
-    timeSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);
-    if (proj42->webServer != nullptr){
-        timeSprite->println(proj42->webServer->timeStr);
-        timeSprite->pushSprite(sX,sY);
-    }
+    timeSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);    
+    timeSprite->println(proj42->webServer->timeStr);
+    timeSprite->pushSprite(sX,sY);
+    
     
     // gfx->println("00:00");
 }
@@ -581,6 +588,7 @@ void DisplayHelper::StopMatrixAnimation()
 
 void DisplayHelper::InitMatrixAnimation()
 {
+    // matrix_effect.timeStr = proj42->webServer->timeStr;
     matrix_effect.init(gfx);    
 }
 

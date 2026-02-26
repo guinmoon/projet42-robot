@@ -41,7 +41,7 @@ void Proj42Events::TouchTask(){
         if (lastAttnT!= 0  && currentTime - lastAttnT > LOST_ATTN_INTERVAL_MS){
             LostAttn();
         }
-        delay(100);
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 

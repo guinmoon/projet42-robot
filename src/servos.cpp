@@ -13,11 +13,13 @@ ServoHelper::ServoHelper(Proj42* _proj42){
     xTaskCreatePinnedToCore(
         this->StartServosUpdateThread, /* Task function. */
         "TaskServos",                     /* name of task. */
-        20000,                       /* Stack size of task */
+        10000,                       /* Stack size of task */
         this,                        /* parameter of the task */
         2 | portPRIVILEGE_BIT,       /* priority of the task */
         NULL,                      /* Task handle to keep track of created task */
         1);    
+    delay(1500);
+    detachServos();
 }
 
 int ServoHelper::getCurrentServoPos(int servo_ind){
@@ -52,12 +54,44 @@ void ServoHelper::testServos(){
 }
 
 void ServoHelper::HeartAnimMove(){
+    attachServos();
     auto curPos = currentPos[SER_MAIN];
     this->setTargetPosAndSpeed(SER_MAIN,curPos-20,1);
     delay(1500);
     this->setTargetPosAndSpeed(SER_MAIN,curPos+20,1);
-    delay(700);
-    this->setTargetPosAndSpeed(SER_MAIN,curPos,1);
+    delay(1500);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos,3);
+    WaitAndDetach();
+}
+
+void ServoHelper::WaitAndDetach(){
+        xTaskCreatePinnedToCore(
+            this->StartServosUpdateThread, /* Task function. */
+            "TaskServos",                     /* name of task. */
+            10000,                       /* Stack size of task */
+            this,                        /* parameter of the task */
+            2 | portPRIVILEGE_BIT,       /* priority of the task */
+            NULL,                      /* Task handle to keep track of created task */
+            1); 
+}
+
+void ServoHelper::WaitAndDetachThread(void *_this){     
+    delay(1000);
+    int servCount = 3;
+    while (true){
+        int okServosCount = 0;
+        for (int i=0;i<servCount;i++){
+            if (((ServoHelper *)_this)->targetPos[i] == ((ServoHelper *)_this)->currentPos[i])
+                okServosCount++;
+        }
+        if (okServosCount==servCount){
+            delay(1000);
+            ((ServoHelper *)_this)->detachServos();
+            break;
+        }
+        delay(1000);
+    }
+    vTaskDelete(NULL);
 }
 
 void ServoHelper::setTargetPosAndSpeed(int servo_ind, int pos, int _speed)
@@ -100,8 +134,11 @@ void ServoHelper::updateServos()
         
         lastUpdateTime = currentTime;
         
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < SERVOS_COUNT; i++)
         {
+            if (currentPos[i] == targetPos[i])
+                continue;
+
             if (currentPos[i] < targetPos[i])
             {
                 currentPos[i] += servo_speed[i];
@@ -123,7 +160,6 @@ void ServoHelper::updateServos()
             // case SER_LEFT_BACK:
             //     applyServoPos(SER_LEFT_BACK, currentPos[i]);
             //     break;
-
             }
         }
     }else{

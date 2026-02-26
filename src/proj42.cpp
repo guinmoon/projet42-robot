@@ -30,9 +30,9 @@ void Proj42::Init()
     // HighPowMode();    
     // configHelper->LoadConfig("/config.json");
     // batteryHelper->InitBattery();
-    displayHelper->InitDisplay();
-    delay(1000);
     webServer = new WebServerManager();
+    displayHelper->InitDisplay();
+    delay(1000);    
     webServer->init();
 
 
