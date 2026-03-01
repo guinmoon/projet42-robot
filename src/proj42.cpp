@@ -29,12 +29,13 @@ void Proj42::Init()
 {
     // HighPowMode();    
     // configHelper->LoadConfig("/config.json");
-    // batteryHelper->InitBattery();
+    // batteryHelper->InitBattery();    
     webServer = new WebServerManager();
     displayHelper->InitDisplay();
+    eventsHelper->InitSensors();
     delay(1000);    
     webServer->init();
-
+    
 
     // servoHelper->testServos();    
     // touchHelper->InitTouch();    
