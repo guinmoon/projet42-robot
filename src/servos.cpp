@@ -1,5 +1,6 @@
 #include "servos.hpp"
 #include "global_def.h"
+#include "proj42.hpp"
 
 // #include <Servo.h>
 // #include "character.h"
@@ -9,7 +10,7 @@ Proj42 *ServoHelper::proj42;
 ServoHelper::ServoHelper(Proj42* _proj42){
     this->proj42 = _proj42;
     servo_main = new Servo();
-    attachServos();
+    // attachServos();
     xTaskCreatePinnedToCore(
         this->StartServosUpdateThread, /* Task function. */
         "TaskServos",                     /* name of task. */
@@ -19,7 +20,7 @@ ServoHelper::ServoHelper(Proj42* _proj42){
         NULL,                      /* Task handle to keep track of created task */
         1);    
     delay(1500);
-    detachServos();
+    // detachServos();
 }
 
 int ServoHelper::getCurrentServoPos(int servo_ind){
@@ -38,6 +39,7 @@ void ServoHelper::attachServos()
 
 void ServoHelper::detachServos()
 {
+    servo_speed[SER_MAIN] = 0;
     servo_main->detach();
     // servo_left_back.detach();
     // servo_right_back.detach();
@@ -47,6 +49,7 @@ void ServoHelper::detachServos()
 
 
 void ServoHelper::testServos(){    
+    attachServos();
     delay(2000);
     this->setTargetPosAndSpeed(SER_MAIN,160,2);
     delay(2000);
@@ -54,19 +57,34 @@ void ServoHelper::testServos(){
 }
 
 void ServoHelper::HeartAnimMove(){
+    Serial.println("HeartAnimMove");
     attachServos();
     auto curPos = currentPos[SER_MAIN];
-    this->setTargetPosAndSpeed(SER_MAIN,curPos-20,1);
-    delay(1500);
-    this->setTargetPosAndSpeed(SER_MAIN,curPos+20,1);
-    delay(1500);
-    this->setTargetPosAndSpeed(SER_MAIN,curPos,3);
+    while (proj42->eventsHelper->touchTopCount > 14){
+        this->setTargetPosAndSpeed(SER_MAIN,curPos-20,1);
+        delay(1500);
+        this->setTargetPosAndSpeed(SER_MAIN,curPos+20,1);
+        delay(1500);
+        this->setTargetPosAndSpeed(SER_MAIN,curPos,3);
+        delay(500);
+    }
+    WaitAndDetach();
+}
+
+
+void ServoHelper::LeftAttnAnimMove(){
+    Serial.println("LeftAttnAnimMove");
+    attachServos();
+    auto curPos = currentPos[SER_MAIN];
+    this->setTargetPosAndSpeed(SER_MAIN,curPos-80,4);
+    delay(3000);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos,3);        
     WaitAndDetach();
 }
 
 void ServoHelper::WaitAndDetach(){
         xTaskCreatePinnedToCore(
-            this->StartServosUpdateThread, /* Task function. */
+            this->WaitAndDetachThread, /* Task function. */
             "TaskServos",                     /* name of task. */
             10000,                       /* Stack size of task */
             this,                        /* parameter of the task */
@@ -76,21 +94,24 @@ void ServoHelper::WaitAndDetach(){
 }
 
 void ServoHelper::WaitAndDetachThread(void *_this){     
-    delay(1000);
-    int servCount = 3;
-    while (true){
-        int okServosCount = 0;
-        for (int i=0;i<servCount;i++){
-            if (((ServoHelper *)_this)->targetPos[i] == ((ServoHelper *)_this)->currentPos[i])
-                okServosCount++;
-        }
-        if (okServosCount==servCount){
-            delay(1000);
-            ((ServoHelper *)_this)->detachServos();
-            break;
-        }
-        delay(1000);
-    }
+    // delay(1000);
+    // int servCount  = ((ServoHelper *)_this)->SERVOS_COUNT;
+    // while (true){
+    //     int okServosCount = 0;
+    //     for (int i=0;i<servCount;i++){
+    //         if (((ServoHelper *)_this)->targetPos[i] == ((ServoHelper *)_this)->currentPos[i]){
+    //             okServosCount++;
+    //             Serial.println("Servo reach target");
+    //         }            
+    //     }
+    //     if (okServosCount==servCount){
+    //         delay(1000);
+    //         ((ServoHelper *)_this)->detachServos();
+    //         break;
+    //     }
+    //     delay(1000);
+    // }
+    // Serial.println("Servos detached");
     vTaskDelete(NULL);
 }
 
@@ -109,6 +130,7 @@ void ServoHelper::applyServoPos(int servo_ind, int pos)
     case SER_MAIN:
         // servo_left_front.attach(SER_LEFT_FRONT_PIN, USMIN, USMAX);
         servo_main->write(pos);
+        // Serial.printf("Servo pos: %i\n",pos);
         // servo_left_front.detach();
         // servo_left_front.writeMicroseconds(2400);
         break;
@@ -155,7 +177,8 @@ void ServoHelper::updateServos()
             switch (i)
             {
             case SER_MAIN:
-                this->applyServoPos(SER_MAIN, currentPos[i]);
+                // Serial.printf("C: %i T: %i\n",currentPos[i] , targetPos[i]);
+                applyServoPos(SER_MAIN, currentPos[i]);
                 break;
             // case SER_LEFT_BACK:
             //     applyServoPos(SER_LEFT_BACK, currentPos[i]);
@@ -179,6 +202,6 @@ void ServoHelper::ServosUpdateTask()
     {
         // Обновление сервоприводов выполняется на втором ядре        
         this->updateServos();
-        delay(5);
+        delay(15);
     }
 }

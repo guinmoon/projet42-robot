@@ -51,6 +51,7 @@ public:
 
     void testServos();
     void HeartAnimMove();
+    void LeftAttnAnimMove();
 
     void WaitAndDetach();
 

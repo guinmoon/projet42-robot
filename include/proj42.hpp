@@ -12,6 +12,23 @@ class Proj42
 {
 private:
     static Proj42* instance;
+
+    template <typename T>
+    struct TaskParam {
+        T* instance;
+        void (T::*method)();
+        TaskParam(T* inst, void (T::*meth)()) : instance(inst), method(meth) {}
+    };
+
+    // Статическая обёртка, которая вызывает метод у объекта
+    template <typename T>
+    static void taskWrapper(void* param) {
+        auto task = static_cast<TaskParam<T>*>(param);
+        (task->instance->*(task->method))();  // Вызов метода
+        delete task;
+        vTaskDelete(NULL);
+    }
+
 public:
     
     int topTouchCount = 0;
@@ -51,6 +68,12 @@ public:
     // void LowPowMode();
     // void NormalPowMode();
     // void HighPowMode();
+
+    template <typename T>
+    static void runTask(void (T::*method)(), T* instance, const char* name, uint32_t stackSize = 10000, uint32_t priority = 2, int core = 1) {
+        auto task = new TaskParam<T>{instance, method};
+        xTaskCreatePinnedToCore(taskWrapper<T>, name, stackSize, task, priority | portPRIVILEGE_BIT, NULL, core);
+    }
 
 };
 

@@ -99,7 +99,7 @@ public:
     
     int weatherType;
     bool showTime = false;
-    bool showEyes = false;
+    bool showEyes = true;
     bool showMatrixAnimation = false;
 
     const int GifPlayTime = 2;    

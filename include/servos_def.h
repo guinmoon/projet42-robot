@@ -3,6 +3,13 @@
 #define USMIN 600    // This is the rounded 'minimum' microsecond length based on the minimum pulse of 150
 #define USMAX 2300   // This is the rounded 'maximum' microsecond length based on the maximum pulse of 600
 #define SERVO_FREQ 50
+
+// #define USMIN 600   // Вместо 600 (ближе к стандарту 0 град)
+// #define USMAX 2300   // Вместо 2300 (ближе к стандарту 180 град)
+// #define SERVOMIN 200 // Оставить или пересчитать под новые US
+// #define SERVOMAX 500
+// #define SERVO_FREQ 100
+
 #define SERVO_180 170
 #define SERVO_90 90
 #define SERVO_0 25

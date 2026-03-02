@@ -86,11 +86,19 @@ void Proj42Events::SensorsTask()
                 }else{
                     
                     unsigned long duration = millis() - startTime;
-                    if (duration >= MIN_DURATION_MS)
+                    if (duration >= SHORT_DIST_ATTN_DURATION_MS)
+                    {
+
+                    }
+
+                    if (duration >= LONG_DIST_ATTN_DURATION_MS)
                     {
                         Serial.print("✅ Рука поднесена на ");
                         Serial.print(duration);
-                        Serial.println(" мс (≥ " + String(MIN_DURATION_MS) + " мс)");
+                        Serial.println(" мс (≥ " + String(LONG_DIST_ATTN_DURATION_MS) + " мс)");
+                        if (!leftDistanceLongAttnBegin)
+                            leftDistanceLongAttn();
+                        leftDistanceLongAttnBegin = true;
                         // Здесь можно вывести сигнал, включить LED и т.д.
                     }
                 }
@@ -99,9 +107,10 @@ void Proj42Events::SensorsTask()
             {
                 if (isHandNear)
                 {
+                    leftDistanceLongAttnBegin = false;
                     // Рука ушла — проверяем, сколько длилось
                     unsigned long duration = millis() - startTime;
-                    if (duration < MIN_DURATION_MS)
+                    if (duration < LONG_DIST_ATTN_DURATION_MS)
                     {
                         Serial.print("⚠️ Кратковременное приближение: ");
                         Serial.print(duration);
@@ -156,6 +165,20 @@ void Proj42Events::TouchTopLostAttn()
     if (touchTopCount >= 5 && touchTopCount <= 14)
         proj42->displayHelper->Angry(2000);
     touchTopCount = 0;
+    Serial.println("TouchTopLostAttn");
+}
+
+void Proj42Events::leftDistanceShortAttn()
+{
+    HasAttn();    
+}
+
+void Proj42Events::leftDistanceLongAttn()
+{
+
+    HasAttn();
+    Proj42::runTask(&ServoHelper::LeftAttnAnimMove, proj42->servoHelper, "LeftAttnAnimMove");
+    // proj42->servoHelper->LeftAttnAnimMove();
 }
 
 void Proj42Events::HasAttn()
@@ -188,8 +211,8 @@ void Proj42Events::TouchEvent()
         proj42->displayHelper->HeartAnimation();
         break;
     case 25:
-        proj42->displayHelper->HeartAnimation();
-        proj42->servoHelper->HeartAnimMove();
+        proj42->displayHelper->HeartAnimation();        
+        Proj42::runTask(&ServoHelper::HeartAnimMove, proj42->servoHelper, "HeartAnimTask");
         break;
     default:
         proj42->displayHelper->LookUp();

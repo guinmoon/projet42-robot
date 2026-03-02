@@ -10,7 +10,7 @@
 
 #define WINDOW_SIZE 5
 #define TOUCH_TOP_LOST_INTERVAL_MS 2000
-#define LOST_ATTN_INTERVAL_MS 25000
+#define LOST_ATTN_INTERVAL_MS 80000
 
 class Proj42;
 
@@ -28,7 +28,8 @@ private:
 
 
     const uint16_t THRESHOLD = 180;    // Порог в мм: ниже — считаем "рука близко"
-    const unsigned long MIN_DURATION_MS = 1000; // Минимальное время поднесения (например, 500 мс)
+    const unsigned long LONG_DIST_ATTN_DURATION_MS = 1000; // Минимальное время поднесения (например, 500 мс)
+    const unsigned long SHORT_DIST_ATTN_DURATION_MS = 300; // Минимальное время поднесения (например, 500 мс)
 
     // Данные для усреднения (скользящее окно)
     
@@ -42,7 +43,7 @@ public:
     int touchTopCount = 0;
     unsigned long touchTopLastT = 0; 
     unsigned long lastAttnT = 0; 
- 
+    bool     leftDistanceLongAttnBegin = false;
 
     Proj42Events(Proj42* _proj42);
     void InitSensors();
@@ -53,7 +54,9 @@ public:
     void TouchTopLostAttn();
     void HasAttn();
     void LostAttn();
-    
+    void leftDistanceLongAttn();
+    void leftDistanceShortAttn();
+
     static void StartSensorsThread(void *_this);
     void SensorsTask();
 
