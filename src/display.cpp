@@ -38,9 +38,9 @@ DisplayHelper::DisplayHelper(Proj42 *_proj42)
     gfx = new LGFX_MyDisplay();
     
 
-    // timeSprite = new LGFX_Sprite(gfx);
-    // timeSprite->setPsram(false);
-    // timeSprite->createSprite(240, 100);
+    timeSprite = new LGFX_Sprite(gfx);
+    timeSprite->setPsram(false);
+    timeSprite->createSprite(240, 100);
 
 }
 
@@ -118,6 +118,7 @@ void DisplayHelper::InitDisplay()
     luluEyes->setAutoblinker(ON, 3, 2); // Start auto blinker animation cycle -> bool active, int interval, int variation -> turn on/off, set interval between each blink in full seconds, set range for random interval variation in full seconds
     luluEyes->setIdleMode(ON, 2, 2);    
     luluEyes->setSpacebetween(40);
+    
 
     InitMatrixAnimation();
     // showMatrixAnimation = true;
@@ -132,6 +133,11 @@ void DisplayHelper::InitDisplay()
         NULL,                      /* Task handle to keep track of created task */
         0);
     
+
+    // luluEyes->setPosition(S);
+    // luluEyes->anim_fallingAsleep();
+    // delay(10000);
+    // luluEyes->anim_wakeUp();
     // showEyes = false;
     // ShowClock(4000);
 

@@ -148,6 +148,13 @@ public:
     unsigned long laughAnimationTimer = 0;
     int laughAnimationDuration = 500;
     bool laughToggle = 1;
+    // Animation - falling asleep: gradual eye closing with slow blinks
+    bool fallingAsleep = 0;
+    unsigned long fallingAsleepTimer = 0;
+    int fallingAsleepDuration = 5000; // 5 seconds total animation
+    int fallingAsleepStage = 0; // 0 = not started, 1 = animating, 2 = complete
+    int sleepBlinkCounter = 0;
+    unsigned long sleepBlinkTimer = 0;
     
     //*********************************************************************************************
     //  GENERAL METHODS
@@ -223,6 +230,10 @@ public:
     void anim_laugh();
     // Play hearts animation - eyes transform to hearts and back
     void anim_hearts();
+    // Play falling asleep animation - gradual eye closing with slow, heavy blinks
+    void anim_fallingAsleep();
+    // Wake up - open eyes after falling asleep
+    void anim_wakeUp();
     
     //*********************************************************************************************
     //  PRE-CALCULATIONS AND ACTUAL DRAWINGS

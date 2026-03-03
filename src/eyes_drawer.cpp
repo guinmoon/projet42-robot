@@ -293,6 +293,31 @@ void LuLuEyes::anim_hearts()
     heartsAnimationTimer = millis();
 }
 
+void LuLuEyes::anim_fallingAsleep()
+{
+    fallingAsleep = 1;
+    fallingAsleepStage = 1;
+    fallingAsleepTimer = millis();
+    sleepBlinkCounter = 0;
+    sleepBlinkTimer = millis();
+    // Disable other animations during sleep
+    autoblinker = 0;
+    idle = 0;
+    hFlicker = 0;
+    vFlicker = 0;
+}
+
+void LuLuEyes::anim_wakeUp()
+{
+    fallingAsleep = 0;
+    fallingAsleepStage = 0;
+    // Open eyes
+    eyeLheightNext = eyeLheightDefault;
+    eyeRheightNext = eyeRheightDefault;
+    eyeL_open = 1;
+    eyeR_open = 1;
+}
+
 //*********************************************************************************************
 //  PRE-CALCULATIONS AND ACTUAL DRAWINGS
 //*********************************************************************************************
@@ -375,6 +400,105 @@ void LuLuEyes::drawEyes()
         }
     }
     
+    // Handle falling asleep animation
+    if (fallingAsleep && fallingAsleepStage == 1)
+    {
+        unsigned long elapsed = millis() - fallingAsleepTimer;
+        
+        // Animation progresses through stages based on elapsed time
+        if (elapsed >= fallingAsleepDuration)
+        {
+            // Animation complete - eyes fully closed
+            fallingAsleepStage = 2;
+            eyeLheightNext = 1;
+            eyeRheightNext = 1;
+        }
+        else
+        {
+            // Calculate progress (0.0 to 1.0)
+            float progress = (float)elapsed / fallingAsleepDuration;
+            
+            // Perform slow, heavy blinks that get slower as we progress
+            // Stage 1: First blink (0-20% of animation)
+            if (progress < 0.2f && sleepBlinkCounter == 0)
+            {
+                if (millis() - sleepBlinkTimer > 800) // First blink after 800ms
+                {
+                    close();
+                    sleepBlinkCounter = 1;
+                    sleepBlinkTimer = millis();
+                }
+            }
+            // Opening after first blink (20-30%)
+            else if (progress >= 0.2f && sleepBlinkCounter == 1)
+            {
+                open();
+                sleepBlinkCounter = 2;
+            }
+            // Stage 2: Second blink (30-50% of animation)
+            else if (progress < 0.5f && sleepBlinkCounter == 2)
+            {
+                if (millis() - sleepBlinkTimer > 1200) // Second blink after 1200ms (slower)
+                {
+                    close();
+                    sleepBlinkCounter = 3;
+                    sleepBlinkTimer = millis();
+                }
+            }
+            // Opening after second blink (50-60%)
+            else if (progress >= 0.5f && sleepBlinkCounter == 3)
+            {
+                open();
+                sleepBlinkCounter = 4;
+            }
+            // Stage 3: Third blink (60-80% of animation)
+            else if (progress < 0.8f && sleepBlinkCounter == 4)
+            {
+                if (millis() - sleepBlinkTimer > 1800) // Third blink after 1800ms (even slower)
+                {
+                    close();
+                    sleepBlinkCounter = 5;
+                    sleepBlinkTimer = millis();
+                }
+            }
+            // Opening after third blink (80-90%)
+            else if (progress >= 0.8f && sleepBlinkCounter == 5)
+            {
+                open();
+                sleepBlinkCounter = 6;
+            }
+            // Final close (90-100%)
+            else if (progress >= 0.9f && sleepBlinkCounter == 6)
+            {
+                close();
+                sleepBlinkCounter = 7; // Won't open again
+            }
+            
+            // Gradually reduce eye size to simulate heavy eyelids
+            // Eyes become slightly smaller with each stage
+            if (progress < 0.3f)
+            {
+                eyeLheightNext = eyeLheightDefault;
+                eyeRheightNext = eyeRheightDefault;
+            }
+            else if (progress < 0.6f)
+            {
+                eyeLheightNext = eyeLheightDefault * 0.9f;
+                eyeRheightNext = eyeRheightDefault * 0.9f;
+            }
+            else if (progress < 0.85f)
+            {
+                eyeLheightNext = eyeLheightDefault * 0.7f;
+                eyeRheightNext = eyeRheightDefault * 0.7f;
+            }
+            else
+            {
+                eyeLheightNext = eyeLheightDefault * 0.5f;
+                eyeRheightNext = eyeRheightDefault * 0.5f;
+            }
+        }
+    }
+    
     // Vertical size offset for larger eyes when looking left or right (curious gaze)
     if (curious && !hearts)
     {
@@ -413,14 +537,14 @@ void LuLuEyes::drawEyes()
     eyeRy += (eyeRheightDefault - eyeRheightCurrent) / 2; // vertical centering of eye when closing
     eyeRy -= eyeRheightOffset / 2;
     // Open eyes again after closing them
-    if (eyeL_open && !hearts)
+    if (eyeL_open && !hearts && !fallingAsleep)
     {
         if (eyeLheightCurrent <= 1 + eyeLheightOffset)
         {
             eyeLheightNext = eyeLheightDefault;
         }
     }
-    if (eyeR_open && !hearts)
+    if (eyeR_open && !hearts && !fallingAsleep)
     {
         if (eyeRheightCurrent <= 1 + eyeRheightOffset)
         {
@@ -446,7 +570,7 @@ void LuLuEyes::drawEyes()
     // Right eye border radius
     eyeRborderRadiusCurrent = (eyeRborderRadiusCurrent + eyeRborderRadiusNext) / 2;
     //// APPLYING MACRO ANIMATIONS ////
-    if (autoblinker && !hearts)
+    if (autoblinker && !hearts && !fallingAsleep)
     {
         if (millis() >= blinktimer)
         {
@@ -455,7 +579,7 @@ void LuLuEyes::drawEyes()
         }
     }
     // Laughing - eyes shaking up and down for the duration defined by laughAnimationDuration (default = 500ms)
-    if (laugh && !hearts)
+    if (laugh && !hearts && !fallingAsleep)
     {
         if (laughToggle)
         {
@@ -471,7 +595,7 @@ void LuLuEyes::drawEyes()
         }
     }
     // Confused - eyes shaking left and right for the duration defined by confusedAnimationDuration (default = 500ms)
-    if (confused && !hearts)
+    if (confused && !hearts && !fallingAsleep)
     {
         if (confusedToggle)
         {
@@ -487,7 +611,7 @@ void LuLuEyes::drawEyes()
         }
     }
     // Idle - eyes moving to random positions on screen
-    if (idle && !hearts)
+    if (idle && !hearts && !fallingAsleep)
     {
         if (millis() >= idleAnimationTimer)
         {
@@ -606,31 +730,41 @@ void LuLuEyes::drawEyes()
         {
             sprite->fillRoundRect(eyeRx, eyeRy, eyeRwidthCurrent, eyeRheightCurrent, eyeRborderRadiusCurrent, MAINCOLOR); // right eye
         }
-        // Prepare mood type transitions
-        if (tired)
+        // Prepare mood type transitions (only if not falling asleep)
+        if (!fallingAsleep)
         {
-            eyelidsTiredHeightNext = eyeLheightCurrent / 2;
-            eyelidsAngryHeightNext = 0;
+            if (tired)
+            {
+                eyelidsTiredHeightNext = eyeLheightCurrent / 2;
+                eyelidsAngryHeightNext = 0;
+            }
+            else
+            {
+                eyelidsTiredHeightNext = 0;
+            }
+            if (angry)
+            {
+                eyelidsAngryHeightNext = eyeLheightCurrent / 2;
+                eyelidsTiredHeightNext = 0;
+            }
+            else
+            {
+                eyelidsAngryHeightNext = 0;
+            }
+            if (happy)
+            {
+                eyelidsHappyBottomOffsetNext = eyeLheightCurrent / 2;
+            }
+            else
+            {
+                eyelidsHappyBottomOffsetNext = 0;
+            }
         }
         else
         {
+            // Disable mood effects during falling asleep
             eyelidsTiredHeightNext = 0;
-        }
-        if (angry)
-        {
-            eyelidsAngryHeightNext = eyeLheightCurrent / 2;
-            eyelidsTiredHeightNext = 0;
-        }
-        else
-        {
             eyelidsAngryHeightNext = 0;
-        }
-        if (happy)
-        {
-            eyelidsHappyBottomOffsetNext = eyeLheightCurrent / 2;
-        }
-        else
-        {
             eyelidsHappyBottomOffsetNext = 0;
         }
         // Draw tired top eyelids
