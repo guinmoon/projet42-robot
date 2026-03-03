@@ -106,6 +106,7 @@ public:
     
     static LGFX_Sprite *eyesSprite;
     static LGFX_Sprite *timeSprite;
+    // static LGFX_Sprite *matrixSprite;
     static LGFX_MyDisplay* gfx;
     static LuLuEyes* luluEyes;
     static AnimatedGIF gif;

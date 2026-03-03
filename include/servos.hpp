@@ -54,7 +54,7 @@ public:
     void LeftAttnAnimMove();
 
     void WaitAndDetach();
-
+    bool InMove = false;
     static void WaitAndDetachThread(void *_this);
 
 };

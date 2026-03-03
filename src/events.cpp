@@ -1,6 +1,7 @@
 
 #include "events.hpp"
 #include "proj42.hpp"
+#include "eyes_drawer.hpp"
 
 Proj42 *Proj42Events::proj42;
 Adafruit_VL53L0X Proj42Events::leftDistanceSensor = Adafruit_VL53L0X();
@@ -144,7 +145,7 @@ void Proj42Events::StartTouchThread(void *_this)
 
 void Proj42Events::TouchTask()
 {
-
+    delay(1500);
     while (true)
     {
         uint8_t touched = digitalRead(TOUCH_PIN);
@@ -179,13 +180,19 @@ void Proj42Events::leftDistanceShortAttn()
 {
     HasAttn();   
     proj42->displayHelper->LookLeft();
+    proj42->displayHelper->luluEyes->close(false,true);
+    delay(500);
+    proj42->displayHelper->LookLeft();
+    proj42->displayHelper->luluEyes->close(false,true);
 }
 
 void Proj42Events::leftDistanceLongAttn()
 {
     leftDistanceLongAttnBegin = true;
-    HasAttn();
-    Proj42::runTask(&ServoHelper::LeftAttnAnimMove, proj42->servoHelper, "LeftAttnAnimMove");
+    // HasAttn();
+    leftDistanceShortAttn();
+    if (!proj42->servoHelper->InMove)
+        Proj42::runTask(&ServoHelper::LeftAttnAnimMove, proj42->servoHelper, "LeftAttnAnimMove");
     // proj42->servoHelper->LeftAttnAnimMove();
 }
 
@@ -219,7 +226,7 @@ void Proj42Events::TouchEvent()
         proj42->displayHelper->HeartAnimation();
         break;
     case 25:
-        proj42->displayHelper->HeartAnimation();        
+        proj42->displayHelper->HeartAnimation();          
         Proj42::runTask(&ServoHelper::HeartAnimMove, proj42->servoHelper, "HeartAnimTask");
         break;
     default:

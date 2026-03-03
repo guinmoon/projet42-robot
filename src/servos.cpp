@@ -10,7 +10,7 @@ Proj42 *ServoHelper::proj42;
 ServoHelper::ServoHelper(Proj42* _proj42){
     this->proj42 = _proj42;
     servo_main = new Servo();
-    // attachServos();
+    attachServos();
     xTaskCreatePinnedToCore(
         this->StartServosUpdateThread, /* Task function. */
         "TaskServos",                     /* name of task. */
@@ -19,6 +19,7 @@ ServoHelper::ServoHelper(Proj42* _proj42){
         2 | portPRIVILEGE_BIT,       /* priority of the task */
         NULL,                      /* Task handle to keep track of created task */
         1);    
+    this->setTargetPosAndSpeed(SER_MAIN,90,4);
     delay(1500);
     // detachServos();
 }
@@ -58,7 +59,8 @@ void ServoHelper::testServos(){
 
 void ServoHelper::HeartAnimMove(){
     Serial.println("HeartAnimMove");
-    attachServos();
+    // attachServos();
+    InMove = true;
     auto curPos = currentPos[SER_MAIN];
     while (proj42->eventsHelper->touchTopCount > 14){
         this->setTargetPosAndSpeed(SER_MAIN,curPos-20,1);
@@ -74,7 +76,8 @@ void ServoHelper::HeartAnimMove(){
 
 void ServoHelper::LeftAttnAnimMove(){
     Serial.println("LeftAttnAnimMove");
-    attachServos();
+    // attachServos();
+    InMove = true;
     auto curPos = currentPos[SER_MAIN];
     this->setTargetPosAndSpeed(SER_MAIN,curPos-80,4);
     delay(3000);
@@ -94,23 +97,24 @@ void ServoHelper::WaitAndDetach(){
 }
 
 void ServoHelper::WaitAndDetachThread(void *_this){     
-    // delay(1000);
-    // int servCount  = ((ServoHelper *)_this)->SERVOS_COUNT;
-    // while (true){
-    //     int okServosCount = 0;
-    //     for (int i=0;i<servCount;i++){
-    //         if (((ServoHelper *)_this)->targetPos[i] == ((ServoHelper *)_this)->currentPos[i]){
-    //             okServosCount++;
-    //             Serial.println("Servo reach target");
-    //         }            
-    //     }
-    //     if (okServosCount==servCount){
-    //         delay(1000);
-    //         ((ServoHelper *)_this)->detachServos();
-    //         break;
-    //     }
-    //     delay(1000);
-    // }
+    delay(1000);
+    int servCount  = ((ServoHelper *)_this)->SERVOS_COUNT;
+    while (true){
+        int okServosCount = 0;
+        for (int i=0;i<servCount;i++){
+            if (((ServoHelper *)_this)->targetPos[i] == ((ServoHelper *)_this)->currentPos[i]){
+                okServosCount++;
+                Serial.println("Servo reach target");
+            }            
+        }
+        if (okServosCount==servCount){
+            ((ServoHelper *)_this)->InMove = false;
+            // delay(1000);
+            // ((ServoHelper *)_this)->detachServos();
+            break;
+        }
+        // delay(1000);
+    }
     // Serial.println("Servos detached");
     vTaskDelete(NULL);
 }

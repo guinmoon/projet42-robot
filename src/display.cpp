@@ -36,9 +36,12 @@ DisplayHelper::DisplayHelper(Proj42 *_proj42)
 {
     proj42 = _proj42;
     gfx = new LGFX_MyDisplay();
-    timeSprite = new LGFX_Sprite(gfx);
-    timeSprite->setPsram(false);
-    timeSprite->createSprite(240, 100);
+    
+
+    // timeSprite = new LGFX_Sprite(gfx);
+    // timeSprite->setPsram(false);
+    // timeSprite->createSprite(240, 100);
+
 }
 
 void DisplayHelper::stopSleepAnimation()
@@ -103,6 +106,9 @@ void DisplayHelper::InitDisplay()
     eyesSprite->setPsram(true);    
     eyesSprite->createSprite(gfx->width(), gfx->height() - EYEBORDER * 2);        
     luluEyes->begin(gfx->width(), gfx->height() - EYEBORDER * 2, eyesSprite); // screen-width, screen-height, max framerate
+
+   
+
     // eyesSprite->createSprite(gfx->width(), gfx->height() );        
     // luluEyes->begin(gfx->width(), gfx->height() , eyesSprite);
 
@@ -126,8 +132,8 @@ void DisplayHelper::InitDisplay()
         NULL,                      /* Task handle to keep track of created task */
         0);
     
-
-    // ShowClock(7000);
+    // showEyes = false;
+    // ShowClock(4000);
 
     // pTurboBuffer = (uint8_t *)heap_caps_malloc(TURBO_BUFFER_SIZE + (280 * 240), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)heap_caps_malloc(280 * 240 * sizeof(uint16_t), MALLOC_CAP_8BIT);
@@ -154,6 +160,7 @@ void DisplayHelper::Confused(){
 void DisplayHelper::LookUp(){
     luluEyes->setPosition(N);
 }
+
 
 
 void DisplayHelper::LookLeft(){
@@ -196,8 +203,8 @@ void DisplayHelper::setIdleMode(bool enable){
 
 void DisplayHelper::pauseEyes()
 {
-    this->showEyes = false;
-    this->gfx->clearDisplay();
+    showEyes = false;
+    gfx->clearDisplay();
 }
 
 void DisplayHelper::resumeEyes()
@@ -260,6 +267,7 @@ void DisplayHelper::DrawDateTime(){
     int bY = 10;
     int sX = 0;
     int sY = 80;
+    // int sY = 0;
     timeSprite->setFont(&fonts::FreeMonoBold24pt7b);
     timeSprite->setCursor(bX, bY);
     timeSprite->setTextColor(TFT_GREEN);
