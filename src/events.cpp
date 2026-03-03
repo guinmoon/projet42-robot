@@ -24,6 +24,7 @@ void Proj42Events::InitSensors()
         Serial.println(F("Failed to boot VL53L0X"));
         delay(1000);
     }
+    lastAttnT = millis();
 
     xTaskCreatePinnedToCore(
         this->StartTouchThread, /* Task function. */
@@ -60,8 +61,8 @@ void Proj42Events::SensorsTask()
         // Выполняем измерение расстояния
         leftDistanceSensor.rangingTest(&leftDistanceMeasure, false);
 
-        if (leftDistanceMeasure.RangeStatus != 4)
-        { // Проверяем, что измерение действительно
+        // if (leftDistanceMeasure.RangeStatus != 4)
+        // { // Проверяем, что измерение действительно
             // Выводим измеренное расстояние в миллиметрах
             // Serial.print(F("Range (mm): "));
             // Serial.println(leftDistanceMeasure.RangeMilliMeter);
@@ -75,6 +76,26 @@ void Proj42Events::SensorsTask()
             }
             avgDist /= WINDOW_SIZE;
 
+            if (avgDist >= THRESHOLD || leftDistanceMeasure.RangeStatus == 4)
+            {
+                if(leftDistanceMeasure.RangeStatus == 4)
+                    Serial.println(F("Out of range")); // Если расстояние недоступно, выводим сообщение
+
+                if (isHandNear)
+                {
+                    leftDistanceLongAttnBegin = false;
+                    // Рука ушла — проверяем, сколько длилось
+                    unsigned long duration = millis() - startTime;
+                    if (duration < LONG_DIST_ATTN_DURATION_MS)
+                    {
+                        Serial.print("⚠️ Кратковременное приближение: ");
+                        Serial.print(duration);
+                        Serial.println(" мс — пропущено");
+                        leftDistanceShortAttn();
+                    }
+                    isHandNear = false;
+                }
+            }
             // Проверка: близко ли рука?
             if (avgDist < THRESHOLD)
             {
@@ -98,32 +119,18 @@ void Proj42Events::SensorsTask()
                         Serial.println(" мс (≥ " + String(LONG_DIST_ATTN_DURATION_MS) + " мс)");
                         if (!leftDistanceLongAttnBegin)
                             leftDistanceLongAttn();
-                        leftDistanceLongAttnBegin = true;
+                        
                         // Здесь можно вывести сигнал, включить LED и т.д.
                     }
                 }
             }
-            else
-            {
-                if (isHandNear)
-                {
-                    leftDistanceLongAttnBegin = false;
-                    // Рука ушла — проверяем, сколько длилось
-                    unsigned long duration = millis() - startTime;
-                    if (duration < LONG_DIST_ATTN_DURATION_MS)
-                    {
-                        Serial.print("⚠️ Кратковременное приближение: ");
-                        Serial.print(duration);
-                        Serial.println(" мс — пропущено");
-                    }
-                    isHandNear = false;
-                }
-            }
-        }
-        else
-        {
-            Serial.println(F("Out of range")); // Если расстояние недоступно, выводим сообщение
-        }
+            
+        // }
+        // else
+        // {
+            // Serial.println(F("Out of range")); // Если расстояние недоступно, выводим сообщение
+            
+        // }
 
         delay(30);
     }
@@ -170,12 +177,13 @@ void Proj42Events::TouchTopLostAttn()
 
 void Proj42Events::leftDistanceShortAttn()
 {
-    HasAttn();    
+    HasAttn();   
+    proj42->displayHelper->LookLeft();
 }
 
 void Proj42Events::leftDistanceLongAttn()
 {
-
+    leftDistanceLongAttnBegin = true;
     HasAttn();
     Proj42::runTask(&ServoHelper::LeftAttnAnimMove, proj42->servoHelper, "LeftAttnAnimMove");
     // proj42->servoHelper->LeftAttnAnimMove();

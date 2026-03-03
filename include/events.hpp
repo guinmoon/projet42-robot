@@ -28,8 +28,8 @@ private:
 
 
     const uint16_t THRESHOLD = 180;    // Порог в мм: ниже — считаем "рука близко"
-    const unsigned long LONG_DIST_ATTN_DURATION_MS = 1000; // Минимальное время поднесения (например, 500 мс)
-    const unsigned long SHORT_DIST_ATTN_DURATION_MS = 300; // Минимальное время поднесения (например, 500 мс)
+    const unsigned long LONG_DIST_ATTN_DURATION_MS = 400; // Минимальное время поднесения (например, 500 мс)
+    const unsigned long SHORT_DIST_ATTN_DURATION_MS = 399; // Минимальное время поднесения (например, 500 мс)
 
     // Данные для усреднения (скользящее окно)
     

@@ -1,6 +1,6 @@
 #include "display.h"
 #include "proj42.hpp"
-#include <eyes_drawer.h>
+#include "eyes_drawer.hpp"
 #include "global_def.h"
 #include "FFat.h"
 
@@ -153,6 +153,11 @@ void DisplayHelper::Confused(){
 
 void DisplayHelper::LookUp(){
     luluEyes->setPosition(N);
+}
+
+
+void DisplayHelper::LookLeft(){
+    luluEyes->setPosition(W);
 }
 
 void DisplayHelper::Laugh(){

@@ -115,6 +115,10 @@ public:
     void DrawDateTime();
     void HeartAnimation();
     void LookUp();
+    void LookLeft();
+    void LookRight();
+    void LookDown();
+    void Borring();
     void Confused();
     void Laugh();
     void Angry(int t);
