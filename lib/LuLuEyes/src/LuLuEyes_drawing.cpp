@@ -1,322 +1,11 @@
 /*
  * Copyright (C) 2025 Artem Savkin
- 
+ * 
+ * LuLuEyes - Animated Eyes Library for Arduino
+ * 
+ * Drawing and rendering methods for LuLuEyes class
  */
-#include "eyes_drawer.hpp"
-
-//*********************************************************************************************
-//  GENERAL METHODS
-//*********************************************************************************************
-
-void LuLuEyes::begin(int width, int height, LGFX_Sprite* _sprite)
-{
-    sprite = _sprite;
-    
-    screenWidth = width;     // OLED display width, in pixels
-    screenHeight = height;   // OLED display height, in pixels
-    eyeLheightCurrent = 1;   // start with closed eyes
-    eyeRheightCurrent = 1;   // start with closed eyes
-}
-
-void LuLuEyes::update()
-{
-    // Limit drawing updates to defined max framerate
-    // if (millis() - fpsTimer >= frameInterval)
-    // {
-    drawEyes();
-    // fpsTimer = millis();
-    // }
-}
-
-//*********************************************************************************************
-//  SETTERS METHODS
-//*********************************************************************************************
-
-void LuLuEyes::setFramerate(byte fps)
-{
-    frameInterval = 1000 / fps;
-}
-
-void LuLuEyes::setWidth(byte leftEye, byte rightEye)
-{
-    eyeLwidthNext = leftEye;
-    eyeRwidthNext = rightEye;
-    eyeLwidthDefault = leftEye;
-    eyeRwidthDefault = rightEye;
-}
-
-void LuLuEyes::setHeight(byte leftEye, byte rightEye)
-{
-    eyeLheightNext = leftEye;
-    eyeRheightNext = rightEye;
-    eyeLheightDefault = leftEye;
-    eyeRheightDefault = rightEye;
-}
-
-void LuLuEyes::setBorderradius(byte leftEye, byte rightEye)
-{
-    eyeLborderRadiusNext = leftEye;
-    eyeRborderRadiusNext = rightEye;
-    eyeLborderRadiusDefault = leftEye;
-    eyeRborderRadiusDefault = rightEye;
-}
-
-void LuLuEyes::setSpacebetween(int space)
-{
-    spaceBetweenNext = space;
-    spaceBetweenDefault = space;
-}
-
-void LuLuEyes::setMood(unsigned char mood)
-{
-    switch (mood)
-    {
-    case TIRED:
-        tired = 1;
-        angry = 0;
-        happy = 0;
-        break;
-    case ANGRY:
-        tired = 0;
-        angry = 1;
-        happy = 0;
-        break;
-    case HAPPY:
-        tired = 0;
-        angry = 0;
-        happy = 1;
-        break;
-    default:
-        tired = 0;
-        angry = 0;
-        happy = 0;
-        break;
-    }
-}
-
-void LuLuEyes::setPosition(unsigned char position)
-{
-    switch (position)
-    {
-    case N:
-        // North, top center
-        eyeLxNext = getScreenConstraint_X() / 2;
-        eyeLyNext = 0;
-        break;
-    case NE:
-        // North-east, top right
-        eyeLxNext = getScreenConstraint_X();
-        eyeLyNext = 0;
-        break;
-    case E:
-        // East, middle right
-        eyeLxNext = getScreenConstraint_X();
-        eyeLyNext = getScreenConstraint_Y() / 2;
-        break;
-    case SE:
-        // South-east, bottom right
-        eyeLxNext = getScreenConstraint_X();
-        eyeLyNext = getScreenConstraint_Y();
-        break;
-    case S:
-        // South, bottom center
-        eyeLxNext = getScreenConstraint_X() / 2;
-        eyeLyNext = getScreenConstraint_Y();
-        break;
-    case SW:
-        // South-west, bottom left
-        eyeLxNext = 0;
-        eyeLyNext = getScreenConstraint_Y();
-        break;
-    case W:
-        // West, middle left
-        eyeLxNext = 0;
-        eyeLyNext = getScreenConstraint_Y() / 2;
-        break;
-    case NW:
-        // North-west, top left
-        eyeLxNext = 0;
-        eyeLyNext = 0;
-        break;
-    default:
-        // Middle center
-        eyeLxNext = getScreenConstraint_X() / 2;
-        eyeLyNext = getScreenConstraint_Y() / 2;
-        break;
-    }
-}
-
-void LuLuEyes::setAutoblinker(bool active, int interval, int variation)
-{
-    autoblinker = active;
-    blinkInterval = interval;
-    blinkIntervalVariation = variation;
-}
-
-void LuLuEyes::setAutoblinker(bool active)
-{
-    autoblinker = active;
-}
-
-void LuLuEyes::setIdleMode(bool active, int interval, int variation)
-{
-    idle = active;
-    idleInterval = interval;
-    idleIntervalVariation = variation;
-}
-
-void LuLuEyes::setIdleMode(bool active)
-{
-    idle = active;
-}
-
-void LuLuEyes::setCuriosity(bool curiousBit)
-{
-    curious = curiousBit;
-}
-
-void LuLuEyes::setCyclops(bool cyclopsBit)
-{
-    cyclops = cyclopsBit;
-}
-
-void LuLuEyes::setHFlicker(bool flickerBit, byte Amplitude)
-{
-    hFlicker = flickerBit;         // turn flicker on or off
-    hFlickerAmplitude = Amplitude; // define amplitude of flickering in pixels
-}
-
-void LuLuEyes::setHFlicker(bool flickerBit)
-{
-    hFlicker = flickerBit; // turn flicker on or off
-}
-
-void LuLuEyes::setVFlicker(bool flickerBit, byte Amplitude)
-{
-    vFlicker = flickerBit;         // turn flicker on or off
-    vFlickerAmplitude = Amplitude; // define amplitude of flickering in pixels
-}
-
-void LuLuEyes::setVFlicker(bool flickerBit)
-{
-    vFlicker = flickerBit; // turn flicker on or off
-}
-
-//*********************************************************************************************
-//  GETTERS METHODS
-//*********************************************************************************************
-
-int LuLuEyes::getScreenConstraint_X()
-{
-    return screenWidth - eyeLwidthCurrent - spaceBetweenCurrent - eyeRwidthCurrent;
-}
-
-int LuLuEyes::getScreenConstraint_Y()
-{
-    return screenHeight - eyeLheightDefault; // using default height here, because height will vary when blinking and in curious mode
-}
-
-//*********************************************************************************************
-//  BASIC ANIMATION METHODS
-//*********************************************************************************************
-
-void LuLuEyes::close()
-{
-    eyeLheightNext = 1; // closing left eye
-    eyeRheightNext = 1; // closing right eye
-    eyeL_open = 0;      // left eye not opened (=closed)
-    eyeR_open = 0;      // right eye not opened (=closed)
-}
-
-void LuLuEyes::open()
-{
-    eyeL_open = 1; // left eye opened - if true, drawEyes() will take care of opening eyes again
-    eyeR_open = 1; // right eye opened
-}
-
-void LuLuEyes::blink()
-{
-    close();
-    open();
-}
-
-void LuLuEyes::close(bool left, bool right)
-{
-    if (left)
-    {
-        eyeLheightNext = 1; // blinking left eye
-        eyeL_open = 0;      // left eye not opened (=closed)
-    }
-    if (right)
-    {
-        eyeRheightNext = 1; // blinking right eye
-        eyeR_open = 0;      // right eye not opened (=closed)
-    }
-}
-
-void LuLuEyes::open(bool left, bool right)
-{
-    if (left)
-    {
-        eyeL_open = 1; // left eye opened - if true, drawEyes() will take care of opening eyes again
-    }
-    if (right)
-    {
-        eyeR_open = 1; // right eye opened
-    }
-}
-
-void LuLuEyes::blink(bool left, bool right)
-{
-    close(left, right);
-    open(left, right);
-}
-
-//*********************************************************************************************
-//  MACRO ANIMATION METHODS
-//*********************************************************************************************
-
-void LuLuEyes::anim_confused()
-{
-    confused = 1;
-}
-
-void LuLuEyes::anim_laugh()
-{
-    laugh = 1;
-}
-
-void LuLuEyes::anim_hearts()
-{
-    hearts = 1;
-    heartsToggle = 0;
-    heartsAnimationTimer = millis();
-}
-
-void LuLuEyes::anim_fallingAsleep()
-{
-    fallingAsleep = 1;
-    fallingAsleepStage = 1;
-    fallingAsleepTimer = millis();
-    sleepBlinkCounter = 0;
-    sleepBlinkTimer = millis();
-    // Disable other animations during sleep
-    autoblinker = 0;
-    idle = 0;
-    hFlicker = 0;
-    vFlicker = 0;
-}
-
-void LuLuEyes::anim_wakeUp()
-{
-    fallingAsleep = 0;
-    fallingAsleepStage = 0;
-    // Open eyes
-    eyeLheightNext = eyeLheightDefault;
-    eyeRheightNext = eyeRheightDefault;
-    eyeL_open = 1;
-    eyeR_open = 1;
-}
+#include "LuLuEyes.h"
 
 //*********************************************************************************************
 //  PRE-CALCULATIONS AND ACTUAL DRAWINGS
@@ -324,7 +13,7 @@ void LuLuEyes::anim_wakeUp()
 
 void LuLuEyes::calcCleanEyes()
 {
-    // Заделываем область чуть большего размера, чтобы удалить любые следы
+    // Cover a slightly larger area to remove any traces
     cleanupLX = eyeLx - cleanupPadding;
     cleanupLY = eyeLy - cleanupPadding;
     cleanupLWidth = eyeLwidthCurrent + 2 * cleanupPadding;
@@ -333,7 +22,7 @@ void LuLuEyes::calcCleanEyes()
     cleanupRY = eyeRy - cleanupPadding;
     cleanupRWidth = eyeRwidthCurrent + 2 * cleanupPadding;
     cleanupRHeight = eyeRheightCurrent + 2 * cleanupPadding;
-    // Убедитесь, что параметры находятся в пределах допустимого диапазона
+    // Make sure parameters are within valid range
     cleanupLX = max(0, cleanupLX);
     cleanupLY = max(0, cleanupLY);
     cleanupLWidth = min(screenWidth - cleanupLX, cleanupLWidth);
@@ -346,15 +35,7 @@ void LuLuEyes::calcCleanEyes()
 
 void LuLuEyes::cleanEyes()
 {
-    // Очищаем область левого глаза
-    // fillRect_noTr(cleanupLX, cleanupLY, cleanupLWidth, cleanupLHeight, BGCOLOR);
-    // // Очищаем область правого глаза, если режим Cyclops отключен
-    // if (!cyclops)
-    // {
-    //     fillRect_noTr(cleanupRX, cleanupRY, cleanupRWidth, cleanupRHeight, BGCOLOR);
-    // }
-    // fillRect_noTr(cleanupRX, cleanupRY, cleanupRWidth, cleanupRHeight, BGCOLOR);
-    // fillRect_noTr(cleanupLX, cleanupLY, cleanupRX + cleanupRWidth, cleanupRY+cleanupRHeight, BGCOLOR);
+    // Clear the left eye area
     sprite->clear();
 }
 
@@ -376,8 +57,7 @@ void LuLuEyes::drawHeart(int x, int y, int size, uint16_t color)
 
 void LuLuEyes::drawEyes()
 {
-    // display.startWrite();
-    //// PRE-CALCULATIONS - EYE SIZES AND VALUES FOR ANIMATION TWEENINGS ////
+    // PRE-CALCULATIONS - EYE SIZES AND VALUES FOR ANIMATION TWEENINGS
     calcCleanEyes();
     
     // Handle hearts animation
@@ -569,7 +249,7 @@ void LuLuEyes::drawEyes()
     eyeLborderRadiusCurrent = (eyeLborderRadiusCurrent + eyeLborderRadiusNext) / 2;
     // Right eye border radius
     eyeRborderRadiusCurrent = (eyeRborderRadiusCurrent + eyeRborderRadiusNext) / 2;
-    //// APPLYING MACRO ANIMATIONS ////
+    // APPLYING MACRO ANIMATIONS
     if (autoblinker && !hearts && !fallingAsleep)
     {
         if (millis() >= blinktimer)
@@ -657,9 +337,7 @@ void LuLuEyes::drawEyes()
         eyeRheightCurrent = 0;
         spaceBetweenCurrent = 0;
     }
-    //// ACTUAL DRAWINGS ////
-    // display.clearDisplay(); // start with a blank screen
-    // fillRect_noTr(cleanupLX, cleanupLY, cleanupLWidth, cleanupLHeight, BGCOLOR);
+    // ACTUAL DRAWINGS
     if (cleanupLX != eyeLx || cleanupLY != eyeLy || cleanupLWidth != eyeLwidthCurrent 
         || cleanupLHeight != eyeLheightCurrent || cleanupRX != eyeRx || cleanupRY != eyeRy 
         || cleanupRWidth != eyeRwidthCurrent || cleanupRHeight != eyeRheightCurrent) // if the left eye has changed, clear it and redraw it
@@ -791,7 +469,7 @@ void LuLuEyes::drawEyes()
         {
             // Cyclops angry eyelids
             sprite->fillTriangle(eyeLx, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy + eyelidsAngryHeight - 1, BGCOLOR);                    // left eyelid half
-            sprite->fillTriangle(eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + (eyeLwidthCurrent / 2), eyeLy + eyelidsAngryHeight - 1, BGCOLOR); // right eyelid half
+            sprite->fillTriangle(eyeLx + (eyeLwidthCurrent / 2), eyeLy - 1, eyeLx + eyeLwidthCurrent, eyeLy - 1, eyeLx + eyeLwidthCurrent / 2, eyeLy + eyelidsAngryHeight - 1, BGCOLOR); // right eyelid half
         }
         // Draw happy bottom eyelids
         eyelidsHappyBottomOffset = (eyelidsHappyBottomOffset + eyelidsHappyBottomOffsetNext) / 2;
@@ -801,9 +479,6 @@ void LuLuEyes::drawEyes()
             sprite->fillRoundRect(eyeRx - 1, (eyeRy + eyeRheightCurrent) - eyelidsHappyBottomOffset + 1, eyeRwidthCurrent + 2, eyeRheightDefault, eyeRborderRadiusCurrent, BGCOLOR); // right eye
         }
     }
-    // display.startWrite();
     
-    sprite->pushSprite(0,EYEBORDER);
-    // display.display(); // show drawings on display
-    // display.endWrite();
+    sprite->pushSprite(0, 0);
 }

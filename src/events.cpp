@@ -1,7 +1,7 @@
 
 #include "events.hpp"
 #include "proj42.hpp"
-#include "eyes_drawer.hpp"
+#include "LuLuEyes.h"
 
 Proj42 *Proj42Events::proj42;
 Adafruit_VL53L0X Proj42Events::leftDistanceSensor = Adafruit_VL53L0X();
