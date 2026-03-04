@@ -240,7 +240,7 @@ public:
     _gfx->setCursor(bX, bY);
     _gfx->setTextColor(TFT_GREEN);
     _gfx->setTextSize(1.5);
-    _gfx->fillRect(bX,bY-1, bX+180, bY+20, TFT_BLACK);
+    _gfx->fillRect(bX,bY-1, bX+200, 70, TFT_BLACK);
     _gfx->println(timeStr);  
 
     _gfx->setFont(curfont);

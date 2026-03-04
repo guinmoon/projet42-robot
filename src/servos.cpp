@@ -85,6 +85,17 @@ void ServoHelper::LeftAttnAnimMove(){
     WaitAndDetach();
 }
 
+void ServoHelper::RightAttnAnimMove(){
+    Serial.println("RightAttnAnimMove");
+    // attachServos();
+    InMove = true;
+    auto curPos = currentPos[SER_MAIN];
+    this->setTargetPosAndSpeed(SER_MAIN,curPos+80,4);
+    delay(3000);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos,3);        
+    WaitAndDetach();
+}
+
 void ServoHelper::WaitAndDetach(){
         xTaskCreatePinnedToCore(
             this->WaitAndDetachThread, /* Task function. */

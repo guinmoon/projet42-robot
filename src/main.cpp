@@ -10,6 +10,7 @@ void setup()
 {
 
     Wire.begin(17, 5);    
+    Wire1.begin(32,33);
     // delay(1000);    
     // if (!sensor.begin())
     // {

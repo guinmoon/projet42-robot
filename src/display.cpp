@@ -139,8 +139,9 @@ void DisplayHelper::InitDisplay()
     // luluEyes->anim_fallingAsleep();
     // delay(10000);
     // luluEyes->anim_wakeUp();
-    showEyes = false;
-    ShowClock(10000);
+
+    // showEyes = false;
+    // ShowClock(10000);
 
     // pTurboBuffer = (uint8_t *)heap_caps_malloc(TURBO_BUFFER_SIZE + (280 * 240), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)heap_caps_malloc(280 * 240 * sizeof(uint16_t), MALLOC_CAP_8BIT);
@@ -172,6 +173,10 @@ void DisplayHelper::LookUp(){
 
 void DisplayHelper::LookLeft(){
     luluEyes->setPosition(W);
+}
+
+void DisplayHelper::LookRight(){
+    luluEyes->setPosition(E);
 }
 
 void DisplayHelper::Laugh(){

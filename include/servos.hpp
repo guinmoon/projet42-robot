@@ -52,6 +52,7 @@ public:
     void testServos();
     void HeartAnimMove();
     void LeftAttnAnimMove();
+    void RightAttnAnimMove();
 
     void WaitAndDetach();
     bool InMove = false;

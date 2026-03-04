@@ -5,11 +5,12 @@
 
 Proj42 *Proj42Events::proj42;
 Adafruit_VL53L0X Proj42Events::leftDistanceSensor = Adafruit_VL53L0X();
+Adafruit_VL53L0X Proj42Events::rightDistanceSensor = Adafruit_VL53L0X();
 
 Proj42Events::Proj42Events(Proj42 *_proj42)
 {
     for (int i = 0; i < WINDOW_SIZE; i++)
-        sensorValues[i] = 180.0;
+        leftSensorValues[i] = 180.0;
     pinMode(TOUCH_PIN, INPUT);
     proj42 = _proj42;
 }
@@ -19,10 +20,20 @@ void Proj42Events::InitSensors()
     // Adafruit_VL53L0X sensor = Adafruit_VL53L0X();
     // leftDistanceSensor = new Adafruit_VL53L0X();
     // delay(1000);
-    while (!leftDistanceSensor.begin())
+    int sensorBeginIterCount = 0;
+    while (!leftDistanceSensor.begin() && sensorBeginIterCount<5)
     // if (!sensor.begin())
     {
-        Serial.println(F("Failed to boot VL53L0X"));
+        sensorBeginIterCount++;
+        Serial.println(F("Failed to boot VL53L0X leftDistanceSensor"));
+        delay(1000);
+    }
+
+    sensorBeginIterCount = 0;
+    while (!rightDistanceSensor.begin(VL53L0X_I2C_ADDR, false,&Wire1) && sensorBeginIterCount<5)    
+    {
+        sensorBeginIterCount++;
+        Serial.println(F("Failed to boot VL53L0X rightDistanceSensor"));
         delay(1000);
     }
     lastAttnT = millis();
@@ -37,8 +48,17 @@ void Proj42Events::InitSensors()
         1);
 
     xTaskCreatePinnedToCore(
-        this->StartSensorsThread, /* Task function. */
-        "StartSensorsThread",     /* name of task. */
+        this->StartLeftSensorsThread, /* Task function. */
+        "StartLeftSensorThread",     /* name of task. */
+        2048,                    /* Stack size of task */
+        this,                     /* parameter of the task */
+        tskIDLE_PRIORITY,         /* priority of the task */
+        NULL,                     /* Task handle to keep track of created task */
+        1);
+
+     xTaskCreatePinnedToCore(
+        this->StartRightSensorsThread, /* Task function. */
+        "StartRightSensorThread",     /* name of task. */
         2048,                    /* Stack size of task */
         this,                     /* parameter of the task */
         tskIDLE_PRIORITY,         /* priority of the task */
@@ -47,13 +67,13 @@ void Proj42Events::InitSensors()
     // tskIDLE_PRIORITY
 }
 
-void Proj42Events::StartSensorsThread(void *_this)
+void Proj42Events::StartLeftSensorsThread(void *_this)
 {
-    ((Proj42Events *)_this)->SensorsTask();
+    ((Proj42Events *)_this)->LeftSensorsTask();
     vTaskDelete(NULL);
 }
 
-void Proj42Events::SensorsTask()
+void Proj42Events::LeftSensorsTask()
 {
 
     while (true)
@@ -62,52 +82,47 @@ void Proj42Events::SensorsTask()
         // Выполняем измерение расстояния
         leftDistanceSensor.rangingTest(&leftDistanceMeasure, false);
 
-        // if (leftDistanceMeasure.RangeStatus != 4)
-        // { // Проверяем, что измерение действительно
-            // Выводим измеренное расстояние в миллиметрах
-            // Serial.print(F("Range (mm): "));
-            // Serial.println(leftDistanceMeasure.RangeMilliMeter);
-            sensorValues[valueIndex] = leftDistanceMeasure.RangeMilliMeter;
-            valueIndex = (valueIndex + 1) % WINDOW_SIZE;
+            leftSensorValues[leftSensorValueIndex] = leftDistanceMeasure.RangeMilliMeter;
+            leftSensorValueIndex = (leftSensorValueIndex + 1) % WINDOW_SIZE;
 
             float avgDist = 0.0;
             for (int i = 0; i < WINDOW_SIZE; i++)
             {
-                avgDist += sensorValues[i];
+                avgDist += leftSensorValues[i];
             }
             avgDist /= WINDOW_SIZE;
 
-            if (avgDist >= THRESHOLD || leftDistanceMeasure.RangeStatus == 4)
+            if (avgDist >= VLX_THRESHOLD || leftDistanceMeasure.RangeStatus == 4)
             {
                 if(leftDistanceMeasure.RangeStatus == 4)
-                    Serial.println(F("Out of range")); // Если расстояние недоступно, выводим сообщение
+                    Serial.println(F("Left Out of range")); // Если расстояние недоступно, выводим сообщение
 
-                if (isHandNear)
+                if (isHandNearLeft)
                 {
                     leftDistanceLongAttnBegin = false;
                     // Рука ушла — проверяем, сколько длилось
-                    unsigned long duration = millis() - startTime;
+                    unsigned long duration = millis() - leftOcupStartTime;
                     if (duration < LONG_DIST_ATTN_DURATION_MS)
                     {
-                        Serial.print("⚠️ Кратковременное приближение: ");
+                        Serial.print("⚠️Left Кратковременное приближение: ");
                         Serial.print(duration);
                         Serial.println(" мс — пропущено");
                         leftDistanceShortAttn();
                     }
-                    isHandNear = false;
+                    isHandNearLeft = false;
                 }
             }
             // Проверка: близко ли рука?
-            if (avgDist < THRESHOLD)
+            if (avgDist < VLX_THRESHOLD)
             {
-                if (!isHandNear)
+                if (!isHandNearLeft)
                 {
                     // Рука только что поднеслась — фиксируем старт
-                    isHandNear = true;
-                    startTime = millis();
+                    isHandNearLeft = true;
+                    leftOcupStartTime = millis();
                 }else{
                     
-                    unsigned long duration = millis() - startTime;
+                    unsigned long duration = millis() - leftOcupStartTime;
                     if (duration >= SHORT_DIST_ATTN_DURATION_MS)
                     {
 
@@ -115,27 +130,97 @@ void Proj42Events::SensorsTask()
 
                     if (duration >= LONG_DIST_ATTN_DURATION_MS)
                     {
-                        Serial.print("✅ Рука поднесена на ");
+                        Serial.print("✅Left Рука поднесена на ");
                         Serial.print(duration);
                         Serial.println(" мс (≥ " + String(LONG_DIST_ATTN_DURATION_MS) + " мс)");
                         if (!leftDistanceLongAttnBegin)
                             leftDistanceLongAttn();
-                        
-                        // Здесь можно вывести сигнал, включить LED и т.д.
+
                     }
                 }
             }
-            
-        // }
-        // else
-        // {
-            // Serial.println(F("Out of range")); // Если расстояние недоступно, выводим сообщение
-            
-        // }
-
         delay(30);
     }
 }
+
+
+
+void Proj42Events::StartRightSensorsThread(void *_this)
+{
+    ((Proj42Events *)_this)->RightSensorsTask();
+    vTaskDelete(NULL);
+}
+
+void Proj42Events::RightSensorsTask()
+{
+
+    while (true)
+    {
+
+        // Выполняем измерение расстояния
+        rightDistanceSensor.rangingTest(&rightDistanceMeasure, false);
+
+            rightSensorValues[rightSensorValueIndex] = rightDistanceMeasure.RangeMilliMeter;
+            rightSensorValueIndex = (rightSensorValueIndex + 1) % WINDOW_SIZE;
+
+            float avgDist = 0.0;
+            for (int i = 0; i < WINDOW_SIZE; i++)
+            {
+                avgDist += rightSensorValues[i];
+            }
+            avgDist /= WINDOW_SIZE;
+
+            if (avgDist >= VLX_THRESHOLD || rightDistanceMeasure.RangeStatus == 4)
+            {
+                if(rightDistanceMeasure.RangeStatus == 4)
+                    Serial.println(F("Right Out of range")); // Если расстояние недоступно, выводим сообщение
+
+                if (isHandNearRight)
+                {
+                    rightDistanceLongAttnBegin = false;
+                    // Рука ушла — проверяем, сколько длилось
+                    unsigned long duration = millis() - rightOcupStartTime;
+                    if (duration < LONG_DIST_ATTN_DURATION_MS)
+                    {
+                        Serial.print("Right Кратковременное приближение: ");
+                        Serial.print(duration);
+                        Serial.println(" мс — пропущено");
+                        leftDistanceShortAttn();
+                    }
+                    isHandNearRight = false;
+                }
+            }
+            // Проверка: близко ли рука?
+            if (avgDist < VLX_THRESHOLD)
+            {
+                if (!isHandNearRight)
+                {
+                    // Рука только что поднеслась — фиксируем старт
+                    isHandNearRight = true;
+                    leftOcupStartTime = millis();
+                }else{
+                    
+                    unsigned long duration = millis() - rightOcupStartTime;
+                    if (duration >= SHORT_DIST_ATTN_DURATION_MS)
+                    {
+
+                    }
+
+                    if (duration >= LONG_DIST_ATTN_DURATION_MS)
+                    {
+                        Serial.print("✅Left Рука поднесена на ");
+                        Serial.print(duration);
+                        Serial.println(" мс (≥ " + String(LONG_DIST_ATTN_DURATION_MS) + " мс)");
+                        if (!rightDistanceLongAttnBegin)
+                            rightDistanceLongAttn();
+
+                    }
+                }
+            }
+        delay(30);
+    }
+}
+
 
 void Proj42Events::StartTouchThread(void *_this)
 {
@@ -193,6 +278,27 @@ void Proj42Events::leftDistanceLongAttn()
     leftDistanceShortAttn();
     if (!proj42->servoHelper->InMove)
         Proj42::runTask(&ServoHelper::LeftAttnAnimMove, proj42->servoHelper, "LeftAttnAnimMove");
+    // proj42->servoHelper->LeftAttnAnimMove();
+}
+
+
+void Proj42Events::rightDistanceShortAttn()
+{
+    HasAttn();   
+    proj42->displayHelper->LookRight();
+    proj42->displayHelper->luluEyes->close(true,false);
+    delay(500);
+    proj42->displayHelper->LookRight();
+    proj42->displayHelper->luluEyes->close(true,false);
+}
+
+void Proj42Events::rightDistanceLongAttn()
+{
+    rightDistanceLongAttnBegin = true;
+    // HasAttn();
+    rightDistanceShortAttn();
+    if (!proj42->servoHelper->InMove)
+        Proj42::runTask(&ServoHelper::RightAttnAnimMove, proj42->servoHelper, "RightAttnAnimMove");
     // proj42->servoHelper->LeftAttnAnimMove();
 }
 
