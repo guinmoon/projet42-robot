@@ -226,10 +226,12 @@ public:
   void DrawDateTime(){  
     if (timeStr == nullptr)
       return;
+    if (strcmp("",timeStr)==0)
+      return;
     int bX = 10;
-    int bY = 10;
-    int sX = 0;
-    int sY = 80;
+    int bY = 70;
+    // int sX = 0;
+    // int sY = 80;
     auto curfont = _gfx->getFont();
     auto cursize = _gfx->getTextSizeX();
     auto cX = _gfx->getCursorX();
@@ -238,7 +240,7 @@ public:
     _gfx->setCursor(bX, bY);
     _gfx->setTextColor(TFT_GREEN);
     _gfx->setTextSize(1.5);
-    _gfx->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);
+    _gfx->fillRect(bX,bY-1, bX+180, bY+20, TFT_BLACK);
     _gfx->println(timeStr);  
 
     _gfx->setFont(curfont);

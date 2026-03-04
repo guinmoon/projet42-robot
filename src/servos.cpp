@@ -14,7 +14,7 @@ ServoHelper::ServoHelper(Proj42* _proj42){
     xTaskCreatePinnedToCore(
         this->StartServosUpdateThread, /* Task function. */
         "TaskServos",                     /* name of task. */
-        10000,                       /* Stack size of task */
+        2048,                       /* Stack size of task */
         this,                        /* parameter of the task */
         2 | portPRIVILEGE_BIT,       /* priority of the task */
         NULL,                      /* Task handle to keep track of created task */
@@ -89,7 +89,7 @@ void ServoHelper::WaitAndDetach(){
         xTaskCreatePinnedToCore(
             this->WaitAndDetachThread, /* Task function. */
             "TaskServos",                     /* name of task. */
-            10000,                       /* Stack size of task */
+            2048,                       /* Stack size of task */
             this,                        /* parameter of the task */
             2 | portPRIVILEGE_BIT,       /* priority of the task */
             NULL,                      /* Task handle to keep track of created task */

@@ -30,7 +30,7 @@ void Proj42Events::InitSensors()
     xTaskCreatePinnedToCore(
         this->StartTouchThread, /* Task function. */
         "StartTouchThread",     /* name of task. */
-        10000,                  /* Stack size of task */
+        2048,                  /* Stack size of task */
         this,                   /* parameter of the task */
         2 | portPRIVILEGE_BIT,  /* priority of the task */
         NULL,                   /* Task handle to keep track of created task */
@@ -39,7 +39,7 @@ void Proj42Events::InitSensors()
     xTaskCreatePinnedToCore(
         this->StartSensorsThread, /* Task function. */
         "StartSensorsThread",     /* name of task. */
-        10000,                    /* Stack size of task */
+        2048,                    /* Stack size of task */
         this,                     /* parameter of the task */
         tskIDLE_PRIORITY,         /* priority of the task */
         NULL,                     /* Task handle to keep track of created task */

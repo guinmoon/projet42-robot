@@ -16,7 +16,7 @@ LGFX_Sprite *DisplayHelper::timeSprite;
 
 AnimatedGIF DisplayHelper::gif;
 
-DigitalRainAnimation<LGFX_MyDisplay> DisplayHelper::matrix_effect = DigitalRainAnimation<LGFX_MyDisplay>();
+DigitalRainAnimation<LGFX_Sprite> DisplayHelper::matrix_effect = DigitalRainAnimation<LGFX_Sprite>();
 Proj42 *DisplayHelper::proj42;
 int DisplayHelper::xOffset = 0;
 int DisplayHelper::yOffset = 0;
@@ -38,9 +38,9 @@ DisplayHelper::DisplayHelper(Proj42 *_proj42)
     gfx = new LGFX_MyDisplay();
     
 
-    timeSprite = new LGFX_Sprite(gfx);
-    timeSprite->setPsram(false);
-    timeSprite->createSprite(240, 100);
+    // timeSprite = new LGFX_Sprite(gfx);
+    // timeSprite->setPsram(false);
+    // timeSprite->createSprite(240, 100);
 
 }
 
@@ -101,11 +101,12 @@ void DisplayHelper::InitDisplay()
     // gfx->setTextColor(TFT_RED);
     // gfx->println("Hello World!");
 
-    luluEyes = new LuLuEyes();    
+    luluEyes = new LuLuEyes();   
+    luluEyes->SpriteY =  EYEBORDER;
     eyesSprite = new LGFX_Sprite(gfx);
-    eyesSprite->setPsram(true);    
+    eyesSprite->setPsram(false);    
     eyesSprite->createSprite(gfx->width(), gfx->height() - EYEBORDER * 2);        
-    luluEyes->begin(gfx->width(), gfx->height() - EYEBORDER * 2, eyesSprite); // screen-width, screen-height, max framerate
+    luluEyes->begin(gfx->width(), gfx->height() - EYEBORDER * 4, eyesSprite); // screen-width, screen-height, max framerate
 
    
 
@@ -119,7 +120,7 @@ void DisplayHelper::InitDisplay()
     luluEyes->setIdleMode(ON, 2, 2);    
     luluEyes->setSpacebetween(40);
     
-
+    // luluEyes->setMood(HAPPY);
     InitMatrixAnimation();
     // showMatrixAnimation = true;
     // luluEyes->setHeartMode(true, 3000);
@@ -127,7 +128,7 @@ void DisplayHelper::InitDisplay()
     xTaskCreatePinnedToCore(
         this->StartEyesUpdateThread, /* Task function. */
         "Task1",                     /* name of task. */
-        10000,                       /* Stack size of task */
+        4096,                       /* Stack size of task */
         this,                        /* parameter of the task */
         2 | portPRIVILEGE_BIT,       /* priority of the task */
         NULL,                      /* Task handle to keep track of created task */
@@ -138,8 +139,8 @@ void DisplayHelper::InitDisplay()
     // luluEyes->anim_fallingAsleep();
     // delay(10000);
     // luluEyes->anim_wakeUp();
-    // showEyes = false;
-    // ShowClock(4000);
+    showEyes = false;
+    ShowClock(10000);
 
     // pTurboBuffer = (uint8_t *)heap_caps_malloc(TURBO_BUFFER_SIZE + (280 * 240), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)heap_caps_malloc(280 * 240 * sizeof(uint16_t), MALLOC_CAP_8BIT);
@@ -183,20 +184,7 @@ void DisplayHelper::Angry(int t){
     luluEyes->angry = false;
 }
 
-// void DisplayHelper::DrawBatteryThread(void* _this){
-//     ((DisplayHelper *)_this)->DrawBatteryTask();
-//     vTaskDelete(NULL);
-// }
 
-// void DisplayHelper::DrawBatteryTask(){
-//     drawBatteryheart();
-//     while (1){ 
-//         delay(1000);
-//         // if (!playGif &&  eyesPaused)
-//         //    continue;        
-//         drawBatteryheart();
-//     }
-// }
 
 void DisplayHelper::setIdleMode(bool enable){
     if (enable){
@@ -244,17 +232,18 @@ void DisplayHelper::EyesUpdateTask()
             luluEyes->update();
             vTaskDelay(pdMS_TO_TICKS(30));                       
         }
-        if (showTime){
-            // luluEyes->cleanEyes();
-            dtShows++;
-            if (dtShows >= 10){
-                DrawDateTime();
-                dtShows=0;
-            }
-            vTaskDelay(pdMS_TO_TICKS(100));
-        }
+        // if (showTime){
+            
+        //     dtShows++;
+        //     if (dtShows >= 10){
+        //         DrawDateTime();
+        //         dtShows=0;
+        //     }
+        //     vTaskDelay(pdMS_TO_TICKS(100));
+        // }
         if (showMatrixAnimation){
             matrix_effect.loop();
+            eyesSprite->pushSprite(0,EYEBORDER);
             vTaskDelay(pdMS_TO_TICKS(20));
         }
         if (!showEyes && !showTime && !showMatrixAnimation){
@@ -271,16 +260,16 @@ void DisplayHelper::DrawDateTime(){
     
     int bX = 10;
     int bY = 10;
-    int sX = 0;
-    int sY = 80;
+    // int sX = 0;
+    // int sY = 80;
     // int sY = 0;
-    timeSprite->setFont(&fonts::FreeMonoBold24pt7b);
-    timeSprite->setCursor(bX, bY);
-    timeSprite->setTextColor(TFT_GREEN);
-    timeSprite->setTextSize(1.5);
-    timeSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);    
-    timeSprite->println(proj42->webServer->timeStr);
-    timeSprite->pushSprite(sX,sY);
+    eyesSprite->setFont(&fonts::FreeMonoBold24pt7b);
+    eyesSprite->setCursor(bX, bY);
+    eyesSprite->setTextColor(TFT_GREEN);
+    eyesSprite->setTextSize(1.5);
+    eyesSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);    
+    eyesSprite->println(proj42->webServer->timeStr);
+    eyesSprite->pushSprite(0,EYEBORDER);
     
     
     // gfx->println("00:00");
@@ -292,9 +281,9 @@ void DisplayHelper::ShowClock(int delay1)
     showTime = false;    
     showMatrixAnimation = true;
     vTaskDelay(pdMS_TO_TICKS(delay1));        
-    showMatrixAnimation = false;
-    vTaskDelay(pdMS_TO_TICKS(100));
-    showTime = true;
+    // showMatrixAnimation = false;
+    // vTaskDelay(pdMS_TO_TICKS(100));
+    // showTime = true;
 }
 
 
@@ -349,7 +338,7 @@ void DisplayHelper::PlayGif(const char *fname)
     xTaskCreatePinnedToCore(
         this->PlayInfiniteThread, /* Task function. */
         "Task1",                  /* name of task. */
-        10000,                    /* Stack size of task */
+        4096,                    /* Stack size of task */
         this,                     /* parameter of the task */
         2 | portPRIVILEGE_BIT,    /* priority of the task */
         NULL,                   /* Task handle to keep track of created task */
@@ -607,8 +596,9 @@ void DisplayHelper::StopMatrixAnimation()
 
 void DisplayHelper::InitMatrixAnimation()
 {
-    // matrix_effect.timeStr = proj42->webServer->timeStr;
-    matrix_effect.init(gfx);    
+    matrix_effect.drawDateTime = true;
+    matrix_effect.timeStr = proj42->webServer->timeStr;
+    matrix_effect.init(eyesSprite);    
 }
 
 // void DisplayHelper::LvglDispFlush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)

@@ -110,7 +110,7 @@ public:
     static LGFX_MyDisplay* gfx;
     static LuLuEyes* luluEyes;
     static AnimatedGIF gif;
-    static DigitalRainAnimation<LGFX_MyDisplay> matrix_effect;    
+    static DigitalRainAnimation<LGFX_Sprite> matrix_effect;    
     DisplayHelper(Proj42 *_proj42);
 
     void DrawDateTime();

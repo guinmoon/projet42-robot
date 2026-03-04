@@ -70,7 +70,7 @@ public:
     // void HighPowMode();
 
     template <typename T>
-    static void runTask(void (T::*method)(), T* instance, const char* name, uint32_t stackSize = 10000, uint32_t priority = 2, int core = 1) {
+    static void runTask(void (T::*method)(), T* instance, const char* name, uint32_t stackSize = 4096, uint32_t priority = 2, int core = 1) {
         auto task = new TaskParam<T>{instance, method};
         xTaskCreatePinnedToCore(taskWrapper<T>, name, stackSize, task, priority | portPRIVILEGE_BIT, NULL, core);
     }

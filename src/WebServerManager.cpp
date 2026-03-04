@@ -73,7 +73,7 @@ void WebServerManager::init() {
     xTaskCreatePinnedToCore(
             this->StartWebServerThread, /* Task function. */
             "Task15",           /* name of task. */
-            10000,              /* Stack size of task */
+            4096,              /* Stack size of task */
             this,               /* parameter of the task */
             tskIDLE_PRIORITY,   /* priority of the task */
             NULL,               /* Task handle to keep track of created task */
