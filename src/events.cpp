@@ -9,8 +9,10 @@ Adafruit_VL53L0X Proj42Events::rightDistanceSensor = Adafruit_VL53L0X();
 
 Proj42Events::Proj42Events(Proj42 *_proj42)
 {
-    for (int i = 0; i < WINDOW_SIZE; i++)
+    for (int i = 0; i < WINDOW_SIZE; i++){
         leftSensorValues[i] = 180.0;
+        rightSensorValues[i] = 180.0;
+    }
     pinMode(TOUCH_PIN, INPUT);
     proj42 = _proj42;
 }
@@ -182,7 +184,7 @@ void Proj42Events::RightSensorsTask()
                     unsigned long duration = millis() - rightOcupStartTime;
                     if (duration < LONG_DIST_ATTN_DURATION_MS)
                     {
-                        Serial.print("Right Кратковременное приближение: ");
+                        Serial.print("⚠️Right Кратковременное приближение: ");
                         Serial.print(duration);
                         Serial.println(" мс — пропущено");
                         leftDistanceShortAttn();
@@ -197,7 +199,7 @@ void Proj42Events::RightSensorsTask()
                 {
                     // Рука только что поднеслась — фиксируем старт
                     isHandNearRight = true;
-                    leftOcupStartTime = millis();
+                    rightOcupStartTime = millis();
                 }else{
                     
                     unsigned long duration = millis() - rightOcupStartTime;
@@ -208,7 +210,7 @@ void Proj42Events::RightSensorsTask()
 
                     if (duration >= LONG_DIST_ATTN_DURATION_MS)
                     {
-                        Serial.print("✅Left Рука поднесена на ");
+                        Serial.print("✅Right Рука поднесена на ");
                         Serial.print(duration);
                         Serial.println(" мс (≥ " + String(LONG_DIST_ATTN_DURATION_MS) + " мс)");
                         if (!rightDistanceLongAttnBegin)
