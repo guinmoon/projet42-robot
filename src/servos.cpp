@@ -19,13 +19,17 @@ ServoHelper::ServoHelper(Proj42* _proj42){
         2 | portPRIVILEGE_BIT,       /* priority of the task */
         NULL,                      /* Task handle to keep track of created task */
         1);    
-    this->setTargetPosAndSpeed(SER_MAIN,90,4);
-    delay(1500);
+    GoHome();
+    // delay(1500);
     // detachServos();
 }
 
 int ServoHelper::getCurrentServoPos(int servo_ind){
     return(currentPos[servo_ind]);
+}
+
+void ServoHelper::GoHome(){
+    setTargetPosAndSpeed(SER_MAIN,90,4);
 }
 
 void ServoHelper::attachServos()

@@ -53,6 +53,7 @@ public:
     void HeartAnimMove();
     void LeftAttnAnimMove();
     void RightAttnAnimMove();
+    void GoHome();
 
     void WaitAndDetach();
     bool InMove = false;
