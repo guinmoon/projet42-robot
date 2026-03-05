@@ -68,6 +68,7 @@ void SensorHandler::sensorTask()
             if (isHandNear)
             {
                 longAttnBegin = false;
+                shortAttnBegin = false;
                 // Рука ушла — проверяем, сколько длилось
                 unsigned long duration = millis() - ocupStartTime;
                 if (duration < LONG_DIST_ATTN_DURATION_MS)
@@ -97,8 +98,9 @@ void SensorHandler::sensorTask()
                 // Короткое внимание
                 if (duration >= SHORT_DIST_ATTN_DURATION_MS && 
                     !events->proj42->servoHelper->InMove && 
-                    !longAttnBegin)
+                    !shortAttnBegin)
                 {
+                    shortAttnBegin = true;
                     if (isRightSensor) {
                         events->rightDistanceShortAttn();
                     } else {

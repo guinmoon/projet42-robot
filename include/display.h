@@ -122,6 +122,7 @@ public:
     void Borring();
     void Confused();
     void Laugh();
+    void Happy();
     void Angry(int t);
     void ShowClock(int delay1);
 

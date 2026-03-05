@@ -115,7 +115,7 @@ void Proj42Events::TouchTask()
 void Proj42Events::TouchTopLostAttn()
 {
     touchTopLastT = 0;
-    if (touchTopCount >= 5 && touchTopCount <= 14)
+    if (touchTopCount >= 2 && touchTopCount <= 14)
         proj42->displayHelper->Angry(2000);
     touchTopCount = 0;
     Serial.println("TouchTopLostAttn");
@@ -187,7 +187,8 @@ void Proj42Events::TouchEvent()
     switch (touchTopCount)
     {
     case 5:
-        proj42->displayHelper->Confused();
+        Proj42::runTask(&DisplayHelper::Happy, proj42->displayHelper, "Happy");
+        // proj42->displayHelper->Happy();
         break;
     case 14:
         proj42->displayHelper->HeartAnimation();

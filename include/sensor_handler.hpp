@@ -31,6 +31,8 @@ private:
     
     // Флаг начала длинного внимания
     bool longAttnBegin = false;
+
+    bool shortAttnBegin = false;
     
     // Идентификатор датчика для отладки (true = правый, false = левый)
     bool isRightSensor;

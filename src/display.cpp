@@ -167,9 +167,7 @@ void DisplayHelper::Confused(){
 
 void DisplayHelper::LookUp(){
     luluEyes->setPosition(N);
-}
-
-
+} 
 
 void DisplayHelper::LookLeft(){
     luluEyes->setPosition(W);
@@ -181,6 +179,12 @@ void DisplayHelper::LookRight(){
 
 void DisplayHelper::Laugh(){
     luluEyes->anim_laugh();
+}
+
+void DisplayHelper::Happy(){
+    luluEyes->setMood(HAPPY);
+    delay(3000);
+    luluEyes->setMood(0);
 }
 
 void DisplayHelper::Angry(int t){
