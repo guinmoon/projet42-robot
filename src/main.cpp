@@ -11,19 +11,15 @@ void setup()
 
     Wire.begin(17, 5);    
     Wire1.begin(32,33);
-    // delay(1000);    
-    // if (!sensor.begin())
-    // {
-    //     Serial.println(F("Failed to boot VL53L0X"));
-    //     delay(1000);
-    // }
     Serial.begin(115200);
     Serial.println("alive");
     proj42.Init();
+    proj42.NormalPowMode();
 }
 
 void loop()
 {
-    Serial.println("alive");
+    // Serial.println("alive");
+    proj42.MemInfo();
     delay(10000);
 }

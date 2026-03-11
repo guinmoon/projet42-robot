@@ -169,11 +169,11 @@ void ServoHelper::applyServoPos(int servo_ind, int pos)
 // Функция обновления сервоприводов
 void ServoHelper::updateServos()
 {
-    unsigned long currentTime = millis(); 
-    if (currentTime - lastUpdateTime >= SER_UPDATE_INTERVAL)
-    {
+    // unsigned long currentTime = millis(); 
+    // if (currentTime - lastUpdateTime >= SER_UPDATE_INTERVAL)
+    // {
         
-        lastUpdateTime = currentTime;
+        // lastUpdateTime = currentTime;
         
         for (int i = 0; i < SERVOS_COUNT; i++)
         {
@@ -203,10 +203,8 @@ void ServoHelper::updateServos()
             //     applyServoPos(SER_LEFT_BACK, currentPos[i]);
             //     break;
             }
-        }
-    }else{
-        // delay(1);
-    }
+      }
+    // }
 }
 
 void ServoHelper::StartServosUpdateThread(void *_this){
@@ -221,6 +219,6 @@ void ServoHelper::ServosUpdateTask()
     {
         // Обновление сервоприводов выполняется на втором ядре        
         this->updateServos();
-        delay(15);
+        delay(SER_UPDATE_INTERVAL);
     }
 }

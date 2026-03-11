@@ -16,7 +16,7 @@ private:
     Adafruit_VL53L0X sensor;
     VL53L0X_RangingMeasurementData_t distanceMeasure;
     
-    const uint16_t VLX_THRESHOLD = 180;    // Порог в мм: ниже — считаем "рука близко"
+    const uint16_t VLX_THRESHOLD = 80;    // Порог в мм: ниже — считаем "рука близко"
     const unsigned long LONG_DIST_ATTN_DURATION_MS = 400; // Минимальное время поднесения
     const unsigned long SHORT_DIST_ATTN_DURATION_MS = 100; // Минимальное время поднесения
 

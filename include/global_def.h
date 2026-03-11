@@ -16,7 +16,7 @@
 
 #define DISPLAY_WIDTH 240
 
-#define EYEBORDER 10
+#define EYEBORDER 5
 
 #define SLEEP_AFTER 45
 

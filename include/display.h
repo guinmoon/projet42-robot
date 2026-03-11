@@ -104,12 +104,12 @@ public:
 
     const int GifPlayTime = 2;    
     
-    static LGFX_Sprite *eyesSprite;
-    static LGFX_Sprite *timeSprite;
+    static LGFX_Sprite *gfxSprite;
+    // static LGFX_Sprite *timeSprite;
     // static LGFX_Sprite *matrixSprite;
     static LGFX_MyDisplay* gfx;
     static LuLuEyes* luluEyes;
-    static AnimatedGIF gif;
+    // static AnimatedGIF gif;
     static DigitalRainAnimation<LGFX_Sprite> matrix_effect;    
     DisplayHelper(Proj42 *_proj42);
 

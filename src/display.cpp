@@ -11,10 +11,10 @@
 
 LGFX_MyDisplay *DisplayHelper::gfx;
 LuLuEyes *DisplayHelper::luluEyes;
-LGFX_Sprite *DisplayHelper::eyesSprite;
-LGFX_Sprite *DisplayHelper::timeSprite;
+LGFX_Sprite *DisplayHelper::gfxSprite;
+// LGFX_Sprite *DisplayHelper::timeSprite;
 
-AnimatedGIF DisplayHelper::gif;
+// AnimatedGIF DisplayHelper::gif;
 
 DigitalRainAnimation<LGFX_Sprite> DisplayHelper::matrix_effect = DigitalRainAnimation<LGFX_Sprite>();
 Proj42 *DisplayHelper::proj42;
@@ -103,10 +103,10 @@ void DisplayHelper::InitDisplay()
 
     luluEyes = new LuLuEyes();   
     luluEyes->SpriteY =  EYEBORDER;
-    eyesSprite = new LGFX_Sprite(gfx);
-    eyesSprite->setPsram(false);    
-    eyesSprite->createSprite(gfx->width(), gfx->height() - EYEBORDER * 2);        
-    luluEyes->begin(gfx->width(), gfx->height() - EYEBORDER * 4, eyesSprite); // screen-width, screen-height, max framerate
+    gfxSprite = new LGFX_Sprite(gfx);
+    gfxSprite->setPsram(false);    
+    gfxSprite->createSprite(gfx->width(), gfx->height() - EYEBORDER * 2);        
+    luluEyes->begin(gfx->width(), gfx->height() - EYEBORDER * 8, gfxSprite); // screen-width, screen-height, max framerate
 
    
 
@@ -212,11 +212,12 @@ void DisplayHelper::pauseEyes()
 
 void DisplayHelper::resumeEyes()
 {
+    if (showEyes)
+        return;
     showTime = false;
     showMatrixAnimation = false;       
-    gfx->fillRect(0,0, 240, 80, TFT_BLACK);   
-    gfx->fillRect(0,160, 240, 240, TFT_BLACK);
-    vTaskDelay(pdMS_TO_TICKS(100));
+    gfxSprite->fillRect(0,0, 240, 240, TFT_BLACK);       
+    // vTaskDelay(pdMS_TO_TICKS(100));
     // this->gfx->clearDisplay();
     showEyes = true;    
     
@@ -252,7 +253,7 @@ void DisplayHelper::EyesUpdateTask()
         // }
         if (showMatrixAnimation){
             matrix_effect.loop();
-            eyesSprite->pushSprite(0,EYEBORDER);
+            gfxSprite->pushSprite(0,EYEBORDER);
             vTaskDelay(pdMS_TO_TICKS(20));
         }
         if (!showEyes && !showTime && !showMatrixAnimation){
@@ -272,13 +273,13 @@ void DisplayHelper::DrawDateTime(){
     // int sX = 0;
     // int sY = 80;
     // int sY = 0;
-    eyesSprite->setFont(&fonts::FreeMonoBold24pt7b);
-    eyesSprite->setCursor(bX, bY);
-    eyesSprite->setTextColor(TFT_GREEN);
-    eyesSprite->setTextSize(1.5);
-    eyesSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);    
-    eyesSprite->println(proj42->webServer->timeStr);
-    eyesSprite->pushSprite(0,EYEBORDER);
+    gfxSprite->setFont(&fonts::FreeMonoBold24pt7b);
+    gfxSprite->setCursor(bX, bY);
+    gfxSprite->setTextColor(TFT_GREEN);
+    gfxSprite->setTextSize(1.5);
+    gfxSprite->fillRect(bX,bY, 240-bX, bY+50, TFT_BLACK);    
+    gfxSprite->println(proj42->webServer->timeStr);
+    gfxSprite->pushSprite(0,EYEBORDER);
     
     
     // gfx->println("00:00");
@@ -289,7 +290,7 @@ void DisplayHelper::ShowClock(int delay1)
     showEyes = false;    
     showTime = false;    
     showMatrixAnimation = true;
-    vTaskDelay(pdMS_TO_TICKS(delay1));        
+    // vTaskDelay(pdMS_TO_TICKS(delay1));        
     // showMatrixAnimation = false;
     // vTaskDelay(pdMS_TO_TICKS(100));
     // showTime = true;
@@ -310,50 +311,50 @@ void DisplayHelper::SetEyePosition(int x, int y)
 //     return (uint8_t *)ps_malloc(u32Size);
 // } /* GIFAlloc() */
 
-void DisplayHelper::PlayGif(const char *fname)
-{
-    playGif = false;
-    pauseEyes();
-    delay(100);
-    if (gifData != nullptr)
-        free(gifData);
-    // gifData = nullptr;
-    // gifSize = 0;
+// void DisplayHelper::PlayGif(const char *fname)
+// {
+//     playGif = false;
+//     pauseEyes();
+//     delay(100);
+//     if (gifData != nullptr)
+//         free(gifData);
+//     // gifData = nullptr;
+//     // gifSize = 0;
 
-    if (!loadGIFToMemory(fname))
-    {
-        Serial.printf("Failed to load GIF to memory play = false");
-        // drawBatteryheart();
-        playGif = false;
-        return;
-    }
+//     if (!loadGIFToMemory(fname))
+//     {
+//         Serial.printf("Failed to load GIF to memory play = false");
+//         // drawBatteryheart();
+//         playGif = false;
+//         return;
+//     }
 
-    // gif.begin(GIF_PALETTE_RGB888);
-    gif.begin(GIF_PALETTE_RGB565_BE);
+//     // gif.begin(GIF_PALETTE_RGB888);
+//     gif.begin(GIF_PALETTE_RGB565_BE);
 
-    if (!gif.open(gifData, gifSize, GIFDraw))
-    {
-        Serial.printf("Failed to open GIF from memory");
-        free(gifData);
-        return;
-    }
-    // gif.setDrawType(GIF_DRAW_COOKED);
-    gif.setFrameBuf(pFrameBuffer); // for Turbo+cooked, we need to supply a full sized output framebuffer
-    // gif.setTurboBuf(pTurboBuffer);
-    // gif.allocFrameBuf(GIFAlloc);
-    // gif.allocTurboBuf(GIFAlloc);
+//     if (!gif.open(gifData, gifSize, GIFDraw))
+//     {
+//         Serial.printf("Failed to open GIF from memory");
+//         free(gifData);
+//         return;
+//     }
+//     // gif.setDrawType(GIF_DRAW_COOKED);
+//     gif.setFrameBuf(pFrameBuffer); // for Turbo+cooked, we need to supply a full sized output framebuffer
+//     // gif.setTurboBuf(pTurboBuffer);
+//     // gif.allocFrameBuf(GIFAlloc);
+//     // gif.allocTurboBuf(GIFAlloc);
 
-    playGif = true;
-    xTaskCreatePinnedToCore(
-        this->PlayInfiniteThread, /* Task function. */
-        "Task1",                  /* name of task. */
-        4096,                    /* Stack size of task */
-        this,                     /* parameter of the task */
-        2 | portPRIVILEGE_BIT,    /* priority of the task */
-        NULL,                   /* Task handle to keep track of created task */
-        0);
-    // fillScreen();
-}
+//     playGif = true;
+//     xTaskCreatePinnedToCore(
+//         this->PlayInfiniteThread, /* Task function. */
+//         "Task1",                  /* name of task. */
+//         4096,                    /* Stack size of task */
+//         this,                     /* parameter of the task */
+//         2 | portPRIVILEGE_BIT,    /* priority of the task */
+//         NULL,                   /* Task handle to keep track of created task */
+//         0);
+//     // fillScreen();
+// }
 
 
 
@@ -541,33 +542,33 @@ void DisplayHelper::PlayInfiniteThread(void *_this)
     vTaskDelete(NULL);
 }
 
-void DisplayHelper::PlayInfiniteTask()
-{
-    int iter = 0;
-    while (playGif /*&& iter<GifPlayTime*/)
-    {
-        pauseEyes();
-        int res = gif.playFrame(true, NULL);
-        if (res == -1)
-        {
-            Serial.printf("play error");
-            vTaskDelete(NULL);
-            return;
-        }
-        if (res == 0)
-        {
-            Serial.printf("play ended reopen");
-            iter++;
-            gif.close();
-            gif.open(gifData, gifSize, GIFDraw);
-        }        
-    }
-    if (playGif){
-        resumeEyes();
-        playGif = false;
-    }
-    Serial.printf("play ended");
-}
+// void DisplayHelper::PlayInfiniteTask()
+// {
+//     int iter = 0;
+//     while (playGif /*&& iter<GifPlayTime*/)
+//     {
+//         pauseEyes();
+//         int res = gif.playFrame(true, NULL);
+//         if (res == -1)
+//         {
+//             Serial.printf("play error");
+//             vTaskDelete(NULL);
+//             return;
+//         }
+//         if (res == 0)
+//         {
+//             Serial.printf("play ended reopen");
+//             iter++;
+//             gif.close();
+//             gif.open(gifData, gifSize, GIFDraw);
+//         }        
+//     }
+//     if (playGif){
+//         resumeEyes();
+//         playGif = false;
+//     }
+//     Serial.printf("play ended");
+// }
 
 // void DisplayHelper::MatrixAnimationThread(void *_this)
 // {
@@ -607,7 +608,7 @@ void DisplayHelper::InitMatrixAnimation()
 {
     matrix_effect.drawDateTime = true;
     matrix_effect.timeStr = proj42->webServer->timeStr;
-    matrix_effect.init(eyesSprite);    
+    matrix_effect.init(gfxSprite);    
 }
 
 // void DisplayHelper::LvglDispFlush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)

@@ -9,7 +9,8 @@
 #include "sensor_handler.hpp"
 
 #define TOUCH_TOP_LOST_INTERVAL_MS 2000
-#define LOST_ATTN_INTERVAL_MS 80000
+#define LOST_ATTN_INTERVAL_MS 5000
+// #define LOST_ATTN_INTERVAL_MS 80000
 
 class Proj42;
 

@@ -126,9 +126,9 @@ void Proj42Events::leftDistanceShortAttn()
     HasAttn();   
     proj42->displayHelper->LookLeft();
     proj42->displayHelper->luluEyes->close(false,true);
-    delay(500);
-    proj42->displayHelper->LookLeft();
-    proj42->displayHelper->luluEyes->close(false,true);
+    // delay(500);
+    // proj42->displayHelper->LookLeft();
+    // proj42->displayHelper->luluEyes->close(false,true);
 }
 
 void Proj42Events::leftDistanceLongAttn()
@@ -147,9 +147,9 @@ void Proj42Events::rightDistanceShortAttn()
     HasAttn();   
     proj42->displayHelper->LookRight();
     proj42->displayHelper->luluEyes->close(true,false);
-    delay(500);
-    proj42->displayHelper->LookRight();
-    proj42->displayHelper->luluEyes->close(true,false);
+    // delay(500);
+    // proj42->displayHelper->LookRight();
+    // proj42->displayHelper->luluEyes->close(true,false);
 }
 
 void Proj42Events::rightDistanceLongAttn()

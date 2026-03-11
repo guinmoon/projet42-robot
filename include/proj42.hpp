@@ -64,10 +64,10 @@ public:
     // static void DoubleTapCallBack(int x, int y);
     // static void LongPressCallBack(int x, int y);
 
-    // void MemInfo();
-    // void LowPowMode();
-    // void NormalPowMode();
-    // void HighPowMode();
+    void MemInfo();
+    void LowPowMode();
+    void NormalPowMode();
+    void HighPowMode();
 
     template <typename T>
     static void runTask(void (T::*method)(), T* instance, const char* name, uint32_t stackSize = 4096, uint32_t priority = 2, int core = 1) {

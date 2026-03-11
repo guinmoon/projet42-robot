@@ -25,6 +25,37 @@ Proj42::Proj42()
 }
 
 
+void Proj42::MemInfo()
+{
+    
+    Serial.printf("\nTotal heap: %d\n", ESP.getHeapSize());
+    Serial.printf("Free heap: %d\n", ESP.getFreeHeap());    
+    Serial.printf("CPU F: %d\n", getCpuFrequencyMhz());
+    Serial.printf("Xtal F: %d\n", getXtalFrequencyMhz());    
+    Serial.printf("Apb F: %d\n", getApbFrequency());
+    
+    Serial.printf("Total PSRAM: %d\n", ESP.getPsramSize());
+    Serial.printf("Free PSRAM: %d\n", ESP.getFreePsram());    
+    Serial.printf("Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
+    // uint32_t getXtalFrequencyMhz();
+}
+
+
+void Proj42::LowPowMode(){
+    setCpuFrequencyMhz(80);
+    // MemInfo();
+}
+
+void Proj42::NormalPowMode(){
+    setCpuFrequencyMhz(160);
+    // MemInfo();
+}
+
+void Proj42::HighPowMode(){
+    setCpuFrequencyMhz(240);
+    // MemInfo();
+}
+
 void Proj42::Init()
 {
     // HighPowMode();    
