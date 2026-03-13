@@ -104,9 +104,15 @@ void Proj42Events::TouchTask()
         {
             TouchTopLostAttn();
         }
-        if (lastAttnT != 0 && currentTime - lastAttnT > BORING_INTERVAL_MS)
+        if (lastAttnT != 0 && borringLevel == 0 && currentTime - lastAttnT > BORING_INTERVAL_MS)
         {
-            Boring();
+            borringLevel++;
+            Boring(borringLevel);
+        }
+        if (lastAttnT != 0 && borringLevel == 1 && currentTime - lastAttnT > VERY_BORING_INTERVAL_MS)
+        {
+            borringLevel++;
+            Boring(borringLevel);
         }
         if (lastAttnT != 0 && currentTime - lastAttnT > LOST_ATTN_INTERVAL_MS)
         {
@@ -170,26 +176,32 @@ void Proj42Events::HasAttn()
 {
 
     lastAttnT = millis();
+    proj42->displayHelper->inAttn();
     if (!proj42->displayHelper->showEyes)
         proj42->displayHelper->resumeEyes();
 }
 
 
-void Proj42Events::Boring()
+void Proj42Events::Boring(byte level)
 {
-    // proj42->displayHelper->showTime = true;
-    lastAttnT = 0;
-    proj42->displayHelper->ShowClock(5000);
-    proj42->servoHelper->GoHome();
-    // proj42->displayHelper->pauseEyes();
+    if (level == 1 ){
+        // proj42->servoHelper->BorringAnimMove();
+        Proj42::runTaskPriotity(&ServoHelper::BorringAnimMove, proj42->servoHelper, "BorringAnimMove");
+    }
+    if (level == 2){
+        proj42->displayHelper->LookDown();
+        Proj42::runTaskIdle(&LuLuEyes::anim_fallingAsleep, proj42->displayHelper->luluEyes, "anim_fallingAsleep");
+        // proj42->displayHelper->luluEyes->anim_fallingAsleep();
+    }
 }
 
 void Proj42Events::LostAttn()
 {
     // proj42->displayHelper->showTime = true;
     lastAttnT = 0;
-    proj42->displayHelper->ShowClock(5000);
+    borringLevel = 0;
     proj42->servoHelper->GoHome();
+    proj42->displayHelper->ShowClock(5000);    
     // proj42->displayHelper->pauseEyes();
 }
 

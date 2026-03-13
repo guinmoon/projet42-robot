@@ -26,6 +26,7 @@ public:
     int touchTopCount = 0;
     unsigned long touchTopLastT = 0; 
     unsigned long lastAttnT = 0; 
+    byte borringLevel = 0;
 
     Proj42Events(Proj42* _proj42);
     void InitSensors();
@@ -36,7 +37,7 @@ public:
     void TouchTopLostAttn();
     void HasAttn();
     void LostAttn();
-    void Boring();
+    void Boring(byte level);
 
     // Методы обработки событий левого датчика
     void leftDistanceLongAttn();

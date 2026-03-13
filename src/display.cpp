@@ -1,6 +1,5 @@
 #include "display.h"
 #include "proj42.hpp"
-#include "LuLuEyes.h"
 #include "global_def.h"
 #include "FFat.h"
 
@@ -124,6 +123,10 @@ void DisplayHelper::LookUp(){
     luluEyes->setPosition(N);
 } 
 
+void DisplayHelper::LookDown(){
+    luluEyes->setPosition(S);
+} 
+
 void DisplayHelper::LookLeft(){
     luluEyes->setPosition(W);
 }
@@ -165,12 +168,20 @@ void DisplayHelper::pauseEyes()
     gfx->clearDisplay();
 }
 
+void DisplayHelper::inAttn(){
+    showMatrixAnimation = false;  
+    luluEyes->fallingAsleep = 0;
+    luluEyes->fallingAsleepStage = 0;    
+}
+
 void DisplayHelper::resumeEyes()
 {
     if (showEyes)
         return;    
-    showMatrixAnimation = false;       
-    gfxSprite->fillRect(0,0, 240, 240, TFT_BLACK);       
+    inAttn();
+    gfxSprite->fillRect(0,0, 240, 240, TFT_BLACK);     
+    luluEyes->setAutoblinker(ON, 3, 2); // Start auto blinker animation cycle -> bool active, int interval, int variation -> turn on/off, set interval between each blink in full seconds, set range for random interval variation in full seconds
+    setIdleMode(true);   
     // vTaskDelay(pdMS_TO_TICKS(100));
     // this->gfx->clearDisplay();
     showEyes = true;    

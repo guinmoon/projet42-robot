@@ -4,6 +4,7 @@
 
 // #include <AnimatedGIF.h>
 #include "global_def.h"
+#include "LuLuEyes.h"
 #include <LovyanGFX.hpp>
 #include <DigitalRainAnimation.hpp>
 
@@ -11,7 +12,6 @@
 
 
 class Proj42;
-class LuLuEyes;
 
 
 class LGFX_MyDisplay : public lgfx::LGFX_Device
@@ -99,6 +99,7 @@ public:
     static DigitalRainAnimation<LGFX_Sprite> matrix_effect;    
     DisplayHelper(Proj42 *_proj42);
     
+    void inAttn();
     void HeartAnimation();
     void LookUp();
     void LookLeft();

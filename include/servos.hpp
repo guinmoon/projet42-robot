@@ -42,6 +42,7 @@ public:
     void HeartAnimMove();
     void LeftAttnAnimMove();
     void RightAttnAnimMove();
+    void BorringAnimMove();
     void GoHome();
 
     void WaitAndDetach();

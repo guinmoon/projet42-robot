@@ -80,6 +80,26 @@ void ServoHelper::HeartAnimMove(){
 }
 
 
+void ServoHelper::BorringAnimMove(){
+    Serial.println("BorringAnimMove");
+    // attachServos();
+    InMove = true;
+    auto curPos = currentPos[SER_MAIN];
+    proj42->displayHelper->LookLeft();
+    proj42->displayHelper->luluEyes->close(false,true);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos-50,6);
+    delay(5000);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos,3);            
+    delay(2000);
+    proj42->displayHelper->LookRight();
+    proj42->displayHelper->luluEyes->close(true,false);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos+50,6);
+    delay(5000);
+    this->setTargetPosAndSpeed(SER_MAIN,curPos,3);
+    WaitAndDetach();
+    GoHome();
+}
+
 void ServoHelper::LeftAttnAnimMove(){
     Serial.println("LeftAttnAnimMove");
     // attachServos();
