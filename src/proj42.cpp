@@ -26,8 +26,7 @@ Proj42::Proj42()
 
 
 void Proj42::MemInfo()
-{
-    
+{    
     Serial.printf("\nTotal heap: %d\n", ESP.getHeapSize());
     Serial.printf("Free heap: %d\n", ESP.getFreeHeap());    
     Serial.printf("CPU F: %d\n", getCpuFrequencyMhz());
@@ -60,7 +59,10 @@ void Proj42::Init()
 {
     // HighPowMode();    
     // configHelper->LoadConfig("/config.json");
-    // batteryHelper->InitBattery();    
+    // batteryHelper->InitBattery();   
+    pinMode(BUILTIN_LED, OUTPUT);
+    pinMode(LCD_BL, OUTPUT);
+    digitalWrite(BUILTIN_LED, HIGH);
     webServer = new WebServerManager();
     displayHelper->InitDisplay();
     eventsHelper->InitSensors();

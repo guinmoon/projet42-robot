@@ -31,7 +31,7 @@ void Proj42Events::InitSensors()
         "StartTouchThread",     /* name of task. */
         2048,                  /* Stack size of task */
         this,                   /* parameter of the task */
-        2 | portPRIVILEGE_BIT,  /* priority of the task */
+        tskIDLE_PRIORITY,  /* priority of the task */
         NULL,                   /* Task handle to keep track of created task */
         1);
 
@@ -104,6 +104,10 @@ void Proj42Events::TouchTask()
         {
             TouchTopLostAttn();
         }
+        if (lastAttnT != 0 && currentTime - lastAttnT > BORING_INTERVAL_MS)
+        {
+            Boring();
+        }
         if (lastAttnT != 0 && currentTime - lastAttnT > LOST_ATTN_INTERVAL_MS)
         {
             LostAttn();
@@ -137,7 +141,7 @@ void Proj42Events::leftDistanceLongAttn()
     // HasAttn();
     leftDistanceShortAttn();
     if (!proj42->servoHelper->InMove)
-        Proj42::runTask(&ServoHelper::LeftAttnAnimMove, proj42->servoHelper, "LeftAttnAnimMove");
+        Proj42::runTaskPriotity(&ServoHelper::LeftAttnAnimMove, proj42->servoHelper, "LeftAttnAnimMove");
     // proj42->servoHelper->LeftAttnAnimMove();
 }
 
@@ -158,7 +162,7 @@ void Proj42Events::rightDistanceLongAttn()
     // HasAttn();
     rightDistanceShortAttn();
     if (!proj42->servoHelper->InMove)
-        Proj42::runTask(&ServoHelper::RightAttnAnimMove, proj42->servoHelper, "RightAttnAnimMove");
+        Proj42::runTaskPriotity(&ServoHelper::RightAttnAnimMove, proj42->servoHelper, "RightAttnAnimMove");
     // proj42->servoHelper->LeftAttnAnimMove();
 }
 
@@ -168,6 +172,16 @@ void Proj42Events::HasAttn()
     lastAttnT = millis();
     if (!proj42->displayHelper->showEyes)
         proj42->displayHelper->resumeEyes();
+}
+
+
+void Proj42Events::Boring()
+{
+    // proj42->displayHelper->showTime = true;
+    lastAttnT = 0;
+    proj42->displayHelper->ShowClock(5000);
+    proj42->servoHelper->GoHome();
+    // proj42->displayHelper->pauseEyes();
 }
 
 void Proj42Events::LostAttn()
@@ -187,7 +201,7 @@ void Proj42Events::TouchEvent()
     switch (touchTopCount)
     {
     case 5:
-        Proj42::runTask(&DisplayHelper::Happy, proj42->displayHelper, "Happy");
+        Proj42::runTaskPriotity(&DisplayHelper::Happy, proj42->displayHelper, "Happy");
         // proj42->displayHelper->Happy();
         break;
     case 14:
@@ -195,7 +209,7 @@ void Proj42Events::TouchEvent()
         break;
     case 25:
         proj42->displayHelper->HeartAnimation();          
-        Proj42::runTask(&ServoHelper::HeartAnimMove, proj42->servoHelper, "HeartAnimTask");
+        Proj42::runTaskPriotity(&ServoHelper::HeartAnimMove, proj42->servoHelper, "HeartAnimTask");
         break;
     default:
         proj42->displayHelper->LookUp();

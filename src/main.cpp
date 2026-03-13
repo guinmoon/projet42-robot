@@ -4,7 +4,6 @@
 
 static Proj42 proj42;
 
-Adafruit_VL53L0X sensor = Adafruit_VL53L0X();
 
 void setup()
 {

@@ -2,15 +2,8 @@
 #ifndef DISLPAY_HELPER_H
 #define DISLPAY_HELPER_H
 
-// #include "Arduino_GFX_Library.h"
-
-// #include <lvgl.h>
-// #include <TFT_eSPI.h>
-// #include <Wire.h>
-#include <AnimatedGIF.h>
-// #include "LittleFS.h"
+// #include <AnimatedGIF.h>
 #include "global_def.h"
-// #include "battery_helper.h"
 #include <LovyanGFX.hpp>
 #include <DigitalRainAnimation.hpp>
 
@@ -49,11 +42,11 @@ public:
         panel_cfg.pin_cs = -1;     // CS pin
         panel_cfg.pin_rst = LCD_RST;   // RST pin
         panel_cfg.pin_busy = -1;       // BUSY pin if used
-        panel_cfg.memory_width = 240;  // Physical width of the panel
-        panel_cfg.memory_height = 240; // Physical height of the panel
-        panel_cfg.panel_width = 240;   // Resolution width
-        panel_cfg.panel_height = 240;  // Resolution height
-        panel_cfg.offset_y = -80;            
+        panel_cfg.memory_width = LCD_WIDTH;  // Physical width of the panel
+        panel_cfg.memory_height = LCD_HEIGHT; // Physical height of the panel
+        panel_cfg.panel_width = LCD_WIDTH;   // Resolution width
+        panel_cfg.panel_height = LCD_HEIGHT;  // Resolution height
+        panel_cfg.offset_y = -80;           //использовать если изображение смещено
         panel_cfg.readable = true;
         panel_cfg.invert = true;
         panel_cfg.rgb_order = false;
@@ -75,8 +68,7 @@ private:
     static uint16_t* usTemp;
     uint8_t *gifData = nullptr;
     int32_t gifSize = 0;
-    // TaskHandle_t Task1;
-    char voltageBuf[15];
+    
 
     bool playGif = true;
     bool wake = false;
@@ -93,27 +85,20 @@ private:
     bool matrixEffectInited = false;
 
 public:
-    // static Arduino_DataBus *bus;
-    // static Arduino_GFX *gfx;
-
     
-    int weatherType;
-    bool showTime = false;
+    int weatherType;    
     bool showEyes = true;
     bool showMatrixAnimation = false;
 
     const int GifPlayTime = 2;    
     
     static LGFX_Sprite *gfxSprite;
-    // static LGFX_Sprite *timeSprite;
-    // static LGFX_Sprite *matrixSprite;
     static LGFX_MyDisplay* gfx;
     static LuLuEyes* luluEyes;
     // static AnimatedGIF gif;
     static DigitalRainAnimation<LGFX_Sprite> matrix_effect;    
     DisplayHelper(Proj42 *_proj42);
-
-    void DrawDateTime();
+    
     void HeartAnimation();
     void LookUp();
     void LookLeft();
@@ -127,10 +112,9 @@ public:
     void ShowClock(int delay1);
 
     // DisplayHelper();
-    static void GIFDraw(GIFDRAW *pDraw);
+    // static void GIFDraw(GIFDRAW *pDraw);
     static void TFTDraw(int x, int y, int w, int h, uint16_t *lBuf);
-    static void DrawBatteryThread(void* _this);
-    void DrawBatteryTask();
+    
     // static void *GIFAlloc(uint32_t u32Size);
     // static void GIFDraw_24bit(GIFDRAW *pDraw);
     bool loadGIFToMemory(const char *filename);
@@ -150,18 +134,12 @@ public:
     static void drawBatteryheart();
     void fillScreen();
     void DisplayOff();
-    void DisplayOn();
-    void ShowMatrixAnimation();
+    void DisplayOn();    
     void InitMatrixAnimation();
     void StopMatrixAnimation();
-    // static void MatrixAnimationThread(void *_this);
-    // static void drawHeart(int x, int y, uint16_t color);
-    
-    // static void LvglDispFlush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
     void SetEyePosition(int x, int y);
     void setIdleMode(bool enable);
     
 };
 
-// extern DisplayHelper displayHelper;
 #endif

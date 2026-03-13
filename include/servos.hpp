@@ -2,35 +2,25 @@
 #define SERVOS_H
 
 #include "global_def.h"
-#include "servos_def.h"
+#include "servos_conf.h"
 #include <ESP32Servo.h>
+
+
 
 class Proj42;
 
 class ServoHelper
 {
 private:
-    static Proj42* proj42;
-    const int SERVOS_COUNT = 1;
+    static Proj42* proj42;    
     Servo* servo_main;
     // Servo servo_left_back;
-    // Servo servo_right_front;
-    // Servo servo_right_back;
-    // Servo servo_tail;
-
-    // bool touched = false;
-
-    // int tailMovesCount = 0;
-    // int tailMaxMovesCount = 6;
 
     // int currentPos[5] = {SERVO_90, 155, 155, SERVO_90, 0}; //sit position
-    // int targetPos[5] = {SERVO_90, 155, 155, SERVO_90, SERVO_90}; //sit position
-    int currentPos[5] = {SERVO_90, SERVO_90, SERVO_90, SERVO_90, SERVO_90}; //sit position
-    int targetPos[5] = {SERVO_90, SERVO_90, SERVO_90, SERVO_90, SERVO_90}; //sit position
-    int servo_speed[5] = {1, 1, 1, 1, 0};
-    // bool reverse_tail_move = false;
+    int currentPos[SERVOS_COUNT] = {SERVO_90}; //sit position
+    int targetPos[SERVOS_COUNT] = {SERVO_90}; //sit position
+    int servo_speed[SERVOS_COUNT] = {1};
 
-    // int tail_speed = 1;
 
     unsigned long lastUpdateTime = 0;
 public:
@@ -46,8 +36,7 @@ public:
     void applyServoPos(int servo_ind, int pos);              
     
     int getCurrentServoPos(int servo_ind);    
-    void updateServos();
-    // void setTailMaxCount(int count);
+    void updateServos();    
 
     void testServos();
     void HeartAnimMove();

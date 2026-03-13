@@ -9,14 +9,16 @@ Proj42 *ServoHelper::proj42;
 
 ServoHelper::ServoHelper(Proj42* _proj42){
     this->proj42 = _proj42;
+    ESP32PWM::allocateTimer(0);
     servo_main = new Servo();
+    servo_main->setPeriodHertz(SERVO_FREQ);
     attachServos();
     xTaskCreatePinnedToCore(
         this->StartServosUpdateThread, /* Task function. */
         "TaskServos",                     /* name of task. */
         2048,                       /* Stack size of task */
         this,                        /* parameter of the task */
-        2 | portPRIVILEGE_BIT,       /* priority of the task */
+        3 | portPRIVILEGE_BIT,       /* priority of the task */
         NULL,                      /* Task handle to keep track of created task */
         1);    
     GoHome();
@@ -67,11 +69,11 @@ void ServoHelper::HeartAnimMove(){
     InMove = true;
     auto curPos = currentPos[SER_MAIN];
     while (proj42->eventsHelper->touchTopCount > 14){
-        this->setTargetPosAndSpeed(SER_MAIN,curPos-20,1);
+        this->setTargetPosAndSpeed(SER_MAIN,curPos-20,2);
         delay(1500);
-        this->setTargetPosAndSpeed(SER_MAIN,curPos+20,1);
+        this->setTargetPosAndSpeed(SER_MAIN,curPos+20,2);
         delay(1500);
-        this->setTargetPosAndSpeed(SER_MAIN,curPos,3);
+        this->setTargetPosAndSpeed(SER_MAIN,SERVO_90,3);
         delay(500);
     }
     WaitAndDetach();
@@ -106,14 +108,14 @@ void ServoHelper::WaitAndDetach(){
             "TaskServos",                     /* name of task. */
             2048,                       /* Stack size of task */
             this,                        /* parameter of the task */
-            2 | portPRIVILEGE_BIT,       /* priority of the task */
+            tskIDLE_PRIORITY,       /* priority of the task */
             NULL,                      /* Task handle to keep track of created task */
             1); 
 }
 
 void ServoHelper::WaitAndDetachThread(void *_this){     
     delay(1000);
-    int servCount  = ((ServoHelper *)_this)->SERVOS_COUNT;
+    int servCount  = SERVOS_COUNT;
     while (true){
         int okServosCount = 0;
         for (int i=0;i<servCount;i++){

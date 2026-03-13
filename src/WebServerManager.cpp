@@ -86,6 +86,7 @@ void WebServerManager::init() {
     } else {
         Serial.println("Автоподключение не удалось или нет сохраненных настроек");
     }
+    digitalWrite(BUILTIN_LED, LOW);
 }
 
 void WebServerManager::startSoftAP() {

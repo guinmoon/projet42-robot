@@ -7,36 +7,36 @@
 #include "servos.hpp"
 #include "WebServerManager.h"
 
-
 class Proj42
 {
 private:
-    static Proj42* instance;
+    static Proj42 *instance;
 
     template <typename T>
-    struct TaskParam {
-        T* instance;
+    struct TaskParam
+    {
+        T *instance;
         void (T::*method)();
-        TaskParam(T* inst, void (T::*meth)()) : instance(inst), method(meth) {}
+        TaskParam(T *inst, void (T::*meth)()) : instance(inst), method(meth) {}
     };
 
     // Статическая обёртка, которая вызывает метод у объекта
     template <typename T>
-    static void taskWrapper(void* param) {
-        auto task = static_cast<TaskParam<T>*>(param);
-        (task->instance->*(task->method))();  // Вызов метода
+    static void taskWrapper(void *param)
+    {
+        auto task = static_cast<TaskParam<T> *>(param);
+        (task->instance->*(task->method))(); // Вызов метода
         delete task;
         vTaskDelete(NULL);
     }
 
 public:
     
-    int topTouchCount = 0;
 
-    DisplayHelper* displayHelper = nullptr;
-    Proj42Events* eventsHelper = nullptr;
-    ServoHelper* servoHelper = nullptr;
-    WebServerManager* webServer = nullptr;
+    DisplayHelper *displayHelper = nullptr;
+    Proj42Events *eventsHelper = nullptr;
+    ServoHelper *servoHelper = nullptr;
+    WebServerManager *webServer = nullptr;
     // GyroHelper* gyroHelper;
     // AudioHelper* audioHelper;
     // LuLuCharacter* luluCharacter;
@@ -50,7 +50,7 @@ public:
     // I2CSlaveHelper* i2cSlaveHelper;
 
     // int lastAction = -1;
-    
+
     Proj42();
     void Init();
     // void setVoltageBuf(float voltage);
@@ -70,11 +70,31 @@ public:
     void HighPowMode();
 
     template <typename T>
-    static void runTask(void (T::*method)(), T* instance, const char* name, uint32_t stackSize = 4096, uint32_t priority = 2, int core = 1) {
+    static void runTaskPriotity(void (T::*method)(), T *instance, const char *name,
+                        uint32_t stackSize = 4096, uint32_t priority = 2, int core = 1)
+    {
         auto task = new TaskParam<T>{instance, method};
-        xTaskCreatePinnedToCore(taskWrapper<T>, name, stackSize, task, priority | portPRIVILEGE_BIT, NULL, core);
+        if (xTaskCreatePinnedToCore(taskWrapper<T>, name, stackSize, task,
+                                    priority | portPRIVILEGE_BIT, NULL, core) != pdPASS)
+        {
+            delete task; // Освобождаем память при ошибке создания задачи
+            Serial.println("Failed to create task");
+        }
     }
 
+
+    template <typename T>
+    static void runTaskIdle(void (T::*method)(), T *instance, const char *name,
+                        uint32_t stackSize = 4096, uint32_t priority = 2, int core = 1)
+    {
+        auto task = new TaskParam<T>{instance, method};
+        if (xTaskCreatePinnedToCore(taskWrapper<T>, name, stackSize, task,
+                                    tskIDLE_PRIORITY, NULL, core) != pdPASS)
+        {
+            delete task; // Освобождаем память при ошибке создания задачи
+            Serial.println("Failed to create task");
+        }
+    }
 };
 
 #endif
