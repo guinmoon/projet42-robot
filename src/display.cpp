@@ -169,16 +169,22 @@ void DisplayHelper::pauseEyes()
 }
 
 void DisplayHelper::inAttn(){
-    showMatrixAnimation = false;  
-    luluEyes->fallingAsleep = 0;
-    luluEyes->fallingAsleepStage = 0;    
+    showMatrixAnimation = false; 
+    if (luluEyes->fallingAsleep != 0){
+        luluEyes->fallingAsleep = 0;
+        luluEyes->fallingAsleepStage = 0;    
+        luluEyes->eyeLheightNext = luluEyes->eyeLheightDefault;
+        luluEyes->eyeRheightNext = luluEyes->eyeRheightDefault;
+        luluEyes-> eyeL_open = 1;
+        luluEyes-> eyeR_open = 1;
+    }     
 }
 
 void DisplayHelper::resumeEyes()
 {
+    inAttn();
     if (showEyes)
         return;    
-    inAttn();
     gfxSprite->fillRect(0,0, 240, 240, TFT_BLACK);     
     luluEyes->setAutoblinker(ON, 3, 2); // Start auto blinker animation cycle -> bool active, int interval, int variation -> turn on/off, set interval between each blink in full seconds, set range for random interval variation in full seconds
     setIdleMode(true);   

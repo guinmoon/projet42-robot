@@ -8,7 +8,7 @@ static Proj42 proj42;
 void setup()
 {
 
-    Wire.begin(17, 5);    
+    Wire.begin(18, 19);    
     Wire1.begin(32,33);
     Serial.begin(115200);
     Serial.println("alive");

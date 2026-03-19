@@ -15,7 +15,7 @@
 
 #define SER_MAIN 0
 
-#define SER_MAIN_PIN 19
+#define SER_MAIN_PIN 4
 
 
 #define SER_UPDATE_INTERVAL 15
