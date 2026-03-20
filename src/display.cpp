@@ -97,10 +97,18 @@ void DisplayHelper::InitDisplay()
         0);    
 
     DisplayOn();
+    
+    // delay(1000);
+    
     // pTurboBuffer = (uint8_t *)heap_caps_malloc(TURBO_BUFFER_SIZE + (280 * 240), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)heap_caps_malloc(280 * 240 * sizeof(uint16_t), MALLOC_CAP_8BIT);
     // pFrameBuffer = (uint8_t *)ps_malloc(280 * 240 * sizeof(uint32_t));
     // usTemp = (uint16_t *)ps_malloc(sizeof(uint16_t)*280);
+}
+
+void DisplayHelper::StartsAnimation(){
+    luluEyes->setPosition(0);
+    luluEyes->anim_spinningStars();
 }
 
 void DisplayHelper::HeartAnimation(){
@@ -177,6 +185,8 @@ void DisplayHelper::inAttn(){
         luluEyes->eyeRheightNext = luluEyes->eyeRheightDefault;
         luluEyes-> eyeL_open = 1;
         luluEyes-> eyeR_open = 1;
+        luluEyes->setAutoblinker(ON, 3, 2); // Start auto blinker animation cycle -> bool active, int interval, int variation -> turn on/off, set interval between each blink in full seconds, set range for random interval variation in full seconds
+        setIdleMode(true);
     }     
 }
 

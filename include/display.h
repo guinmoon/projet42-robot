@@ -101,6 +101,7 @@ public:
     
     void inAttn();
     void HeartAnimation();
+    void StartsAnimation();
     void LookUp();
     void LookLeft();
     void LookRight();
