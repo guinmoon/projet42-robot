@@ -17,12 +17,16 @@ private:
     StorageManager storageManager;
     bool autoConnectAttempted;
     
-    // NTP настройки
+       // NTP настройки
     const char* ntpServer;
     const long gmtOffset_sec;
     const int daylightOffset_sec;
     
-    // Обработчики запросов
+    // Таймер для отключения WiFi при отсутствии запросов
+    unsigned long lastRequestTime = 0 ;
+    static const unsigned long WIFI_TIMEOUT_MS = 5000; // 5 секунд
+    
+       // Обработчики запросов
     void handleRoot();
     void handleConnect();
     void handleStatus();
@@ -34,10 +38,11 @@ private:
     void startSoftAP();
     void stopSoftAP();
     bool attemptAutoConnect();   // Новый метод для автоматического подключения
+    void checkWiFiTimeout();     // Проверка таймаута WiFi при отсутствии запросов
     
 public:
-    char timeStr[15] = "";
-    char dateStr[15];
+    // char timeStr[15] = "";
+    // char dateStr[15];
     char weatherStr[15];
 
     WebServerManager();

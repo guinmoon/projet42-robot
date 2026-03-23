@@ -4,23 +4,15 @@ Proj42 *Proj42::instance;
 
 Proj42::Proj42()
 {
-    // configHelper = new ConfigHelper(this);
-    // dogEvents = new DogEvents(this);
-    // i2cSlaveHelper = new I2CSlaveHelper(this);    
-    // batteryHelper = new BatteryHelper(this);
-    // audioHelper = new AudioHelper(this);    
+   
     displayHelper = new DisplayHelper(this);
     eventsHelper = new Proj42Events(this);
     servoHelper = new ServoHelper(this);
+    rtcManager = new RtcManager(this);
    
-    // luluCharacter = new LuLuCharacter(this);
-    // gyroHelper = new GyroHelper(this);
-    // touchHelper = new TouchHelper(this);
-    // lvglHelper = new LVGLHelper(this);
-    // jsRunner = new JSRunner(this);
-    // fsWebServer = new LuLuWebServer(this);    
+     
     instance = this;
-    
+    sprintf(timeStr, "loading..");
     // touchHelper = new TouchHelper();
 }
 
@@ -35,7 +27,7 @@ void Proj42::MemInfo()
     
     Serial.printf("Total PSRAM: %d\n", ESP.getPsramSize());
     Serial.printf("Free PSRAM: %d\n", ESP.getFreePsram());    
-    Serial.printf("Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
+    Serial.printf("Used PSRAM: %d\n\n", ESP.getPsramSize() - ESP.getFreePsram());
     // uint32_t getXtalFrequencyMhz();
 }
 
@@ -62,8 +54,9 @@ void Proj42::Init()
     // batteryHelper->InitBattery();   
     pinMode(BUILTIN_LED, OUTPUT);
     pinMode(LCD_BL, OUTPUT);
-    digitalWrite(BUILTIN_LED, HIGH);
-    webServer = new WebServerManager();
+    digitalWrite(BUILTIN_LED, LOW);
+    rtcManager->setup();
+    webServer = new WebServerManager(this);
     displayHelper->InitDisplay();
     eventsHelper->InitSensors();
     delay(1000);    

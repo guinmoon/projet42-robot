@@ -219,12 +219,16 @@ void Proj42Events::TouchEvent()
     case 14:
         proj42->displayHelper->HeartAnimation();
         break;
-    case 25:
-        proj42->displayHelper->HeartAnimation();          
-        Proj42::runTaskPriotity(&ServoHelper::HeartAnimMove, proj42->servoHelper, "HeartAnimTask");
+    case 55:
+        proj42->displayHelper->HeartAnimation();
         break;
+    case 35:
+        proj42->displayHelper->StartsAnimation();          
+        Proj42::runTaskPriotity(&ServoHelper::HeartAnimMove, proj42->servoHelper, "HeartAnimTask");
+        break;    
     default:
-        proj42->displayHelper->LookUp();
+        if (touchTopCount<12)
+            proj42->displayHelper->LookUp();
         break;
     }
 }

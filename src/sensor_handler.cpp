@@ -56,6 +56,9 @@ void SensorHandler::sensorTask()
         }
         avgDist /= WINDOW_SIZE;
 
+        // if (isRightSensor) //DEBUG
+        //     Serial.printf("d: %f\n",avgDist);
+
         // Проверка: рука далеко или нет данных
         if (avgDist >= VLX_THRESHOLD || distanceMeasure.RangeStatus == 4)
         {

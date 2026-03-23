@@ -1,6 +1,8 @@
 #include "WebServerManager.h"
 #include "wifi_config.h"
 #include "time.h"
+#include "proj42.hpp"
+
 Proj42 *WebServerManager::proj42;
 
 WebServerManager::WebServerManager(Proj42* _proj42) : 
@@ -11,7 +13,7 @@ WebServerManager::WebServerManager(Proj42* _proj42) :
                                     daylightOffset_sec(0),
                                     autoConnectAttempted(false){    
     proj42 = _proj42;
-    sprintf(timeStr, "00:00");
+    // sprintf(timeStr, "00:00");
     init();       
 }
 
@@ -24,17 +26,18 @@ void WebServerManager::StartWebServerThread(void *_this)
 void WebServerManager::WebServerTask()
 {
     int i = 0;
+    lastRequestTime = millis(); // Инициализация времени последнего запроса
     while (true){
         handleClient();
-        checkWiFiConnection(); 
-        delay(100);
+        // checkWiFiConnection(); 
+        checkWiFiTimeout(); // Проверка таймаута WiFi
+        delay(200);
         i++;
-        if (i>=10)
-        {
-            // if (isConnected)
-            getCurrentTime();
-            i=0;
-        }
+        // if (i>=5)
+        // {            
+        //     getCurrentTime();
+        //     i=0;
+        // }
     }
 }
 
@@ -79,14 +82,17 @@ void WebServerManager::init() {
             NULL,               /* Task handle to keep track of created task */
             1);
     // Попытка автоподключения
-    sprintf(timeStr, "00:00");
+    
     Serial.println("Попытка автоподключения...");
     if (tryAutoConnect()) {
         Serial.println("Автоподключение успешно выполнено");
     } else {
         Serial.println("Автоподключение не удалось или нет сохраненных настроек");
     }
-    digitalWrite(BUILTIN_LED, LOW);
+    digitalWrite(BUILTIN_LED, HIGH);
+
+    getCurrentTime();
+    lastRequestTime = millis();
 }
 
 void WebServerManager::startSoftAP() {
@@ -106,6 +112,7 @@ void WebServerManager::stopSoftAP() {
 void WebServerManager::handleRoot() {
     Serial.println("Handling root request");
     server.send(200, "text/html", loginPage);
+    lastRequestTime = millis(); // Обновляем время последнего запроса
 }
 
 void WebServerManager::handleConnect() {
@@ -157,7 +164,9 @@ void WebServerManager::handleConnect() {
         } else {
             server.send(400, "text/plain", "SSID не может быть пустым");
         }
+        
     }
+    lastRequestTime = millis(); // Обновляем время последнего запроса
 }
 
 void WebServerManager::handleStatus() {
@@ -200,10 +209,18 @@ String WebServerManager::getCurrentTime() {
     if(getLocalTime(&timeinfo)){
         char timeStringBuff[50];
         strftime(timeStringBuff, sizeof(timeStringBuff), "%d.%m.%Y %H:%M:%S", &timeinfo);
-        strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
-        strftime(dateStr, sizeof(dateStr), "%d.%m.%Y", &timeinfo);
+        // strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
+        // strftime(dateStr, sizeof(dateStr), "%d.%m.%Y", &timeinfo);
         // Serial.print("TIME: ");
         // Serial.println(timeStr);
+        
+        // Устанавливаем время в RTC
+        if (proj42!=nullptr && proj42->rtcManager != nullptr) {
+            proj42->rtcManager->SetDateTime(timeStringBuff);
+        }else{
+            Serial.println("!proj42 && proj42->rtcManager");
+        }
+        
         return String(timeStringBuff);
     } else {
         return "Не удалось получить время";
@@ -212,6 +229,33 @@ String WebServerManager::getCurrentTime() {
 
 void WebServerManager::handleClient() {
     server.handleClient();
+    
+}
+
+void WebServerManager::checkWiFiTimeout() {
+    // Проверяем, прошло ли 5 секунд с последнего запроса
+    if (lastRequestTime!=0 && millis() - lastRequestTime > WIFI_TIMEOUT_MS) {
+        Serial.println("Нет запросов в течение 5 секунд. Полное отключение WiFi...");
+        
+        // Отключаем подключение к WiFi сети (STA режим)
+        if (WiFi.status() == WL_CONNECTED) {
+            WiFi.disconnect();
+            isConnected = false;
+            currentSSID = "";
+        }
+        
+        // Останавливаем SoftAP
+        stopSoftAP();
+        
+        // Полное отключение WiFi
+        WiFi.mode(WIFI_MODE_NULL);
+        
+        Serial.println("WiFi полностью отключен.");
+        
+        // Сбрасываем таймер, чтобы не отключать постоянно
+        lastRequestTime = 0;
+        digitalWrite(BUILTIN_LED, LOW);
+    }
 }
 
 bool WebServerManager::getConnectedStatus() {

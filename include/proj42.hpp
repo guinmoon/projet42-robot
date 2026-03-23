@@ -6,6 +6,7 @@
 #include "events.hpp"
 #include "servos.hpp"
 #include "WebServerManager.h"
+#include "RtcManager.hpp"
 
 class Proj42
 {
@@ -32,11 +33,12 @@ private:
 
 public:
     
-
+    char timeStr[15] = "";
     DisplayHelper *displayHelper = nullptr;
     Proj42Events *eventsHelper = nullptr;
     ServoHelper *servoHelper = nullptr;
     WebServerManager *webServer = nullptr;
+    RtcManager *rtcManager = nullptr;
     // GyroHelper* gyroHelper;
     // AudioHelper* audioHelper;
     // LuLuCharacter* luluCharacter;

@@ -97,7 +97,8 @@ void DisplayHelper::InitDisplay()
         0);    
 
     DisplayOn();
-    
+    ShowClock(5000);   
+    // StartsAnimation();
     // delay(1000);
     
     // pTurboBuffer = (uint8_t *)heap_caps_malloc(TURBO_BUFFER_SIZE + (280 * 240), MALLOC_CAP_8BIT);
@@ -112,6 +113,7 @@ void DisplayHelper::StartsAnimation(){
 }
 
 void DisplayHelper::HeartAnimation(){
+    luluEyes->setPosition(0);
     luluEyes->setIdleMode(OFF, 2, 2);
     luluEyes->setAutoblinker(OFF, 3, 2);
     luluEyes->cleanEyes();
@@ -277,7 +279,7 @@ void DisplayHelper::StopMatrixAnimation()
 void DisplayHelper::InitMatrixAnimation()
 {
     matrix_effect.drawDateTime = true;
-    matrix_effect.timeStr = proj42->webServer->timeStr;
+    matrix_effect.timeStr = proj42->timeStr;
     matrix_effect.init(gfxSprite);    
 }
 
