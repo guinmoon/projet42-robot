@@ -134,7 +134,7 @@ void RtcManager::setup() {
 
     // never assume the Rtc was last configured by you, so
     // just clear them to your needed state
-    rtc->Enable32kHzPin(false);
+    rtc->Enable32kHzPin(true);
     wasError("setup Enable32kHzPin");
     rtc->SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
     wasError("setup SetSquareWavePin");

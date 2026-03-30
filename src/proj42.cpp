@@ -8,11 +8,11 @@ Proj42::Proj42()
     displayHelper = new DisplayHelper(this);
     eventsHelper = new Proj42Events(this);
     servoHelper = new ServoHelper(this);
-    rtcManager = new RtcManager(this);
+    // rtcManager = new RtcManager(this);
    
      
     instance = this;
-    sprintf(timeStr, "loading..");
+    sprintf(timeStr, "Hi!");
     // touchHelper = new TouchHelper();
 }
 
@@ -54,12 +54,14 @@ void Proj42::Init()
     // batteryHelper->InitBattery();   
     pinMode(BUILTIN_LED, OUTPUT);
     pinMode(LCD_BL, OUTPUT);
+    pinMode(LED_PHILAMENT_LEFT_PIN, OUTPUT);
     digitalWrite(BUILTIN_LED, LOW);
-    rtcManager->setup();
+    // rtcManager->setup();
+    runTaskPriotity(&Proj42::LightLikeAnimation, this, "LightLikeAnimation");
     webServer = new WebServerManager(this);
     displayHelper->InitDisplay();
     eventsHelper->InitSensors();
-    delay(1000);    
+    delay(200);    
     webServer->init();
     
 
@@ -80,6 +82,23 @@ void Proj42::Init()
     // NormalPowMode();
     // jsRunner->jsEvalFile("/js/script1.js");
     // jsRunner->jsEvalFile("/js/demo.js");
+}
 
+void Proj42::LightLikeAnimation(){
+    auto curBrightness = GetLightBrightness();
+    analogWrite(LED_PHILAMENT_LEFT_PIN, 0); 
+    delay(500);
+    byte maxB  = 30;
+    for (byte brightness = 0; brightness <= maxB; brightness++) {
+        analogWrite(LED_PHILAMENT_LEFT_PIN, brightness);
+        analogWrite(LED_PHILAMENT_RIGHT_PIN, brightness);   // Устанавливаем PWM (0-255)
+        delay(50);  // Задержка для плавности
+    }
 
+    for (byte brightness = maxB; brightness > 1; brightness--) {
+        analogWrite(LED_PHILAMENT_LEFT_PIN, brightness); 
+        analogWrite(LED_PHILAMENT_RIGHT_PIN, brightness);    // Устанавливаем PWM (0-255)
+        delay(50);  // Задержка для плавности
+    }
+    SetLightBrightness(curBrightness);
 }

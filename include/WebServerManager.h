@@ -24,7 +24,7 @@ private:
     
     // Таймер для отключения WiFi при отсутствии запросов
     unsigned long lastRequestTime = 0 ;
-    static const unsigned long WIFI_TIMEOUT_MS = 5000; // 5 секунд
+    static const unsigned long WIFI_TIMEOUT_MS = 20000; // 5 секунд
     
        // Обработчики запросов
     void handleRoot();

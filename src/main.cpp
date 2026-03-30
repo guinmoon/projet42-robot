@@ -22,7 +22,7 @@ void loop()
 {
     // Serial.println("alive");
     proj42.MemInfo();
-    proj42.rtcManager->loop();
+    // proj42.rtcManager->loop();
     delay(10000);
 }
 

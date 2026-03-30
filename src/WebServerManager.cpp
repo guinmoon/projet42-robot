@@ -14,7 +14,7 @@ WebServerManager::WebServerManager(Proj42* _proj42) :
                                     autoConnectAttempted(false){    
     proj42 = _proj42;
     // sprintf(timeStr, "00:00");
-    init();       
+    // init();       
 }
 
 void WebServerManager::StartWebServerThread(void *_this)
@@ -29,15 +29,15 @@ void WebServerManager::WebServerTask()
     lastRequestTime = millis(); // Инициализация времени последнего запроса
     while (true){
         handleClient();
-        // checkWiFiConnection(); 
+        checkWiFiConnection(); 
         checkWiFiTimeout(); // Проверка таймаута WiFi
         delay(200);
         i++;
-        // if (i>=5)
-        // {            
-        //     getCurrentTime();
-        //     i=0;
-        // }
+        if (i>=5)
+        {            
+            getCurrentTime();
+            i=0;
+        }
     }
 }
 
@@ -209,17 +209,14 @@ String WebServerManager::getCurrentTime() {
     if(getLocalTime(&timeinfo)){
         char timeStringBuff[50];
         strftime(timeStringBuff, sizeof(timeStringBuff), "%d.%m.%Y %H:%M:%S", &timeinfo);
-        // strftime(timeStr, sizeof(timeStr), "%H:%M", &timeinfo);
+        strftime(proj42->timeStr, sizeof(proj42->timeStr), "%H:%M", &timeinfo);
         // strftime(dateStr, sizeof(dateStr), "%d.%m.%Y", &timeinfo);
         // Serial.print("TIME: ");
         // Serial.println(timeStr);
         
-        // Устанавливаем время в RTC
-        if (proj42!=nullptr && proj42->rtcManager != nullptr) {
-            proj42->rtcManager->SetDateTime(timeStringBuff);
-        }else{
-            Serial.println("!proj42 && proj42->rtcManager");
-        }
+        // Устанавливаем время в RTC //TODO перенести в configTime
+        if (proj42!=nullptr && proj42->rtcManager != nullptr) 
+            proj42->rtcManager->SetDateTime(timeStringBuff);        
         
         return String(timeStringBuff);
     } else {
@@ -234,8 +231,9 @@ void WebServerManager::handleClient() {
 
 void WebServerManager::checkWiFiTimeout() {
     // Проверяем, прошло ли 5 секунд с последнего запроса
-    if (lastRequestTime!=0 && millis() - lastRequestTime > WIFI_TIMEOUT_MS) {
-        Serial.println("Нет запросов в течение 5 секунд. Полное отключение WiFi...");
+    if (lastRequestTime!=0 && millis() - lastRequestTime > WIFI_TIMEOUT_MS
+        && WiFi.status() == WL_CONNECTED) {
+        Serial.printf("Нет запросов в течение %i секунд. Полное отключение WiFi...\n",WIFI_TIMEOUT_MS/1000);
         
         // Отключаем подключение к WiFi сети (STA режим)
         if (WiFi.status() == WL_CONNECTED) {
@@ -255,6 +253,7 @@ void WebServerManager::checkWiFiTimeout() {
         // Сбрасываем таймер, чтобы не отключать постоянно
         lastRequestTime = 0;
         digitalWrite(BUILTIN_LED, LOW);
+        isConnected = false;
     }
 }
 

@@ -25,6 +25,8 @@ public:
     static Proj42 *proj42;
     int touchTopCount = 0;
     unsigned long touchTopLastT = 0; 
+    unsigned long touchLongPressStartT = 0;
+    bool touchLongPressActive = false;
     unsigned long lastAttnT = 0; 
     byte borringLevel = 0;
 
@@ -34,6 +36,7 @@ public:
     static void StartTouchThread(void *_this);
     void TouchTask();
     void TouchEvent();
+    void TouchLongPressEvent();
     void TouchTopLostAttn();
     void HasAttn();
     void LostAttn();
