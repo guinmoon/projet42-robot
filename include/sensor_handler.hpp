@@ -39,7 +39,7 @@ private:
 
 public:
     SensorHandler(Proj42Events* _events, bool _isRight);
-    bool initSensor(uint8_t address = VL53L0X_I2C_ADDR, bool useDefaultWire = true, TwoWire* wire = &Wire);
+    bool initSensor(uint8_t address = VL53L0X_I2C_ADDR, TwoWire* wire = &Wire);
     void sensorTask();
     bool getLongAttnBegin() const { return longAttnBegin; }
     void setLongAttnBegin(bool value) { longAttnBegin = value; }

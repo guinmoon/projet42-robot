@@ -29,15 +29,16 @@ void WebServerManager::WebServerTask()
     lastRequestTime = millis(); // Инициализация времени последнего запроса
     while (true){
         handleClient();
-        checkWiFiConnection(); 
-        checkWiFiTimeout(); // Проверка таймаута WiFi
-        delay(200);
         i++;
-        if (i>=5)
-        {            
-            getCurrentTime();
+        if (i>=5*30){         
+            checkWiFiConnection(); 
             i=0;
         }
+        
+        // checkWiFiTimeout(); // Проверка таймаута WiFi                
+        if (i%5 == 0)                    
+            getCurrentTime();            
+        delay(200);
     }
 }
 
@@ -86,10 +87,12 @@ void WebServerManager::init() {
     Serial.println("Попытка автоподключения...");
     if (tryAutoConnect()) {
         Serial.println("Автоподключение успешно выполнено");
+        
     } else {
         Serial.println("Автоподключение не удалось или нет сохраненных настроек");
+        digitalWrite(BUILTIN_LED, HIGH);
     }
-    digitalWrite(BUILTIN_LED, HIGH);
+    
 
     getCurrentTime();
     lastRequestTime = millis();
@@ -263,7 +266,7 @@ bool WebServerManager::getConnectedStatus() {
 
 void WebServerManager::checkWiFiConnection() {
     if (isConnected) {
-        if (WiFi.status() != WL_CONNECTED) {
+        if (WiFi.status() != WL_CONNECTED && !tryAutoConnect()) {
             Serial.println("Потеряно подключение WiFi. Восстановление режима AP");
             isConnected = false;
             currentSSID = "";

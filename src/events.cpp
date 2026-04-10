@@ -21,8 +21,10 @@ Proj42Events::Proj42Events(Proj42 *_proj42)
 void Proj42Events::InitSensors()
 {
     // Инициализируем датчики через SensorHandler
-    leftSensorHandler->initSensor(VL53L0X_I2C_ADDR, true, &Wire);
-    rightSensorHandler->initSensor(VL53L0X_I2C_ADDR, false, &Wire1);
+    auto leftSensotOk = leftSensorHandler->initSensor(0x2B,  &Wire);
+    delay(300);
+    auto rightSensotOk = rightSensorHandler->initSensor(VL53L0X_I2C_ADDR,  &Wire1);
+    //  bool rightSensotOk =false;
     
     lastAttnT = millis();
 
@@ -35,23 +37,27 @@ void Proj42Events::InitSensors()
         NULL,                   /* Task handle to keep track of created task */
         1);
 
-    xTaskCreatePinnedToCore(
-        this->StartLeftSensorsThread, /* Task function. */
-        "StartLeftSensorThread",     /* name of task. */
-        2048,                    /* Stack size of task */
-        this,                     /* parameter of the task */
-        tskIDLE_PRIORITY,         /* priority of the task */
-        NULL,                     /* Task handle to keep track of created task */
-        1);
+    if (leftSensotOk){
+        xTaskCreatePinnedToCore(
+            this->StartLeftSensorsThread, /* Task function. */
+            "StartLeftSensorThread",     /* name of task. */
+            2048,                    /* Stack size of task */
+            this,                     /* parameter of the task */
+            tskIDLE_PRIORITY,         /* priority of the task */
+            NULL,                     /* Task handle to keep track of created task */
+            1);
+    }
 
-     xTaskCreatePinnedToCore(
-        this->StartRightSensorsThread, /* Task function. */
-        "StartRightSensorThread",     /* name of task. */
-        2048,                    /* Stack size of task */
-        this,                     /* parameter of the task */
-        tskIDLE_PRIORITY,         /* priority of the task */
-        NULL,                     /* Task handle to keep track of created task */
-        1);
+    if (rightSensotOk){
+        xTaskCreatePinnedToCore(
+            this->StartRightSensorsThread, /* Task function. */
+            "StartRightSensorThread",     /* name of task. */
+            2048,                    /* Stack size of task */
+            this,                     /* parameter of the task */
+            tskIDLE_PRIORITY,         /* priority of the task */
+            NULL,                     /* Task handle to keep track of created task */
+            1);
+    }
     // tskIDLE_PRIORITY
 }
 
@@ -209,7 +215,7 @@ void Proj42Events::rightDistanceLongAttn()
 
 void Proj42Events::HasAttn()
 {
-
+    proj42->HighPowMode();
     lastAttnT = millis();
     proj42->displayHelper->inAttn();
     if (!proj42->displayHelper->showEyes)
@@ -218,12 +224,14 @@ void Proj42Events::HasAttn()
 
 
 void Proj42Events::Boring(byte level)
-{
+{    
     if (level == 1 ){
         // proj42->servoHelper->BorringAnimMove();
+        proj42->HighPowMode();
         Proj42::runTaskPriotity(&ServoHelper::BorringAnimMove, proj42->servoHelper, "BorringAnimMove");
     }
     if (level == 2){
+        proj42->LowPowMode();
         proj42->displayHelper->LookDown();
         Proj42::runTaskIdle(&LuLuEyes::anim_fallingAsleep, proj42->displayHelper->luluEyes, "anim_fallingAsleep");
         // proj42->displayHelper->luluEyes->anim_fallingAsleep();
@@ -233,6 +241,7 @@ void Proj42Events::Boring(byte level)
 void Proj42Events::LostAttn()
 {
     // proj42->displayHelper->showTime = true;
+    proj42->LowPowMode();
     lastAttnT = 0;
     borringLevel = 0;
     proj42->servoHelper->GoHome();

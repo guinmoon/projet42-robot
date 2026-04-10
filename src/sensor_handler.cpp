@@ -10,29 +10,29 @@ SensorHandler::SensorHandler(Proj42Events* _events, bool _isRight)
     }
 }
 
-bool SensorHandler::initSensor(uint8_t address, bool useDefaultWire, TwoWire* wire)
+bool SensorHandler::initSensor(uint8_t address,  TwoWire* wire)
 {
     int sensorBeginIterCount = 0;
-    
+    int repeatTime = 2;
     if (isRightSensor) {
         // Правый датчик использует Wire1
-        while (!sensor.begin(address, false, wire) && sensorBeginIterCount < 5)
+        while (!sensor.begin(address, true, wire) && sensorBeginIterCount < repeatTime)
         {
             sensorBeginIterCount++;
             Serial.println(F("Failed to boot VL53L0X rightDistanceSensor"));
-            delay(1000);
+            delay(100);
         }
     } else {
         // Левый датчик использует Wire по умолчанию
-        while (!sensor.begin() && sensorBeginIterCount < 5)
+        while (!sensor.begin(address, true, wire) && sensorBeginIterCount < repeatTime)
         {
             sensorBeginIterCount++;
             Serial.println(F("Failed to boot VL53L0X leftDistanceSensor"));
-            delay(1000);
+            delay(100);
         }
     }
     
-    return sensorBeginIterCount < 5;
+    return sensorBeginIterCount < repeatTime;
 }
 
 void SensorHandler::sensorTask()

@@ -33,16 +33,19 @@ void Proj42::MemInfo()
 
 
 void Proj42::LowPowMode(){
+    analogWrite(LCD_BL, 40);
     setCpuFrequencyMhz(80);
     // MemInfo();
 }
 
 void Proj42::NormalPowMode(){
+    analogWrite(LCD_BL, 255);   
     setCpuFrequencyMhz(160);
     // MemInfo();
 }
 
 void Proj42::HighPowMode(){
+    analogWrite(LCD_BL, 255);     
     setCpuFrequencyMhz(240);
     // MemInfo();
 }
@@ -57,8 +60,8 @@ void Proj42::Init()
     pinMode(LED_PHILAMENT_LEFT_PIN, OUTPUT);
     digitalWrite(BUILTIN_LED, LOW);
     // rtcManager->setup();
-    runTaskPriotity(&Proj42::LightLikeAnimation, this, "LightLikeAnimation");
-    webServer = new WebServerManager(this);
+    // runTaskPriotity(&Proj42::LightLikeAnimation, this, "LightLikeAnimation");
+    webServer = new WebServerManager3(this);
     displayHelper->InitDisplay();
     eventsHelper->InitSensors();
     delay(200);    

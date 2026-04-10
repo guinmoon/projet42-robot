@@ -5,7 +5,7 @@
 #include "display.h"
 #include "events.hpp"
 #include "servos.hpp"
-#include "WebServerManager.h"
+#include "WebServerManager3.h"
 #include "RtcManager.hpp"
 
 
@@ -42,7 +42,7 @@ public:
     DisplayHelper *displayHelper = nullptr;
     Proj42Events *eventsHelper = nullptr;
     ServoHelper *servoHelper = nullptr;
-    WebServerManager *webServer = nullptr;
+    WebServerManager3 *webServer = nullptr;
     RtcManager *rtcManager = nullptr;
    
    

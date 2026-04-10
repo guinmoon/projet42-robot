@@ -15,7 +15,8 @@ void setup()
     Serial.println("alive");     
     
     proj42.Init();
-    proj42.NormalPowMode();
+    // proj42.NormalPowMode();
+    proj42.HighPowMode();
 }
 
 void loop()
