@@ -120,13 +120,33 @@ void WebServerManager3::handleConnect() {
             connectionStartTime = millis();
             
             WiFi.begin(newSSID.c_str(), newPass.c_str());
-            
-            server.send(200, "text/html", 
-                "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Подключение</title>"
-                "<meta http-equiv='refresh' content='3;url=/status'></head>"
-                "<body style='font-family:Arial;text-align:center;padding:50px;'>"
-                "<h2>Пожалуйста, подождите...</h2><p>Попытка подключения к " + newSSID + "</p>"
-                "</body></html>");
+            unsigned long startTime = millis();
+            while (WiFi.status() != WL_CONNECTED && millis() - startTime < 20000) {
+                delay(500);
+                Serial.print(".");
+            }
+            if (WiFi.status() == WL_CONNECTED) {
+                storageManager.saveWiFiSettings(newSSID.c_str(), newPass.c_str());
+
+                server.send(200, "text/html", 
+                    "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Подключение</title>"
+                    "<meta http-equiv='refresh' content='3;url=/status'></head>"
+                    "<body style='font-family:Arial;text-align:center;padding:50px;'>"
+                    "<h2>Пожалуйста, подождите...</h2><p>Попытка подключения к " + newSSID + "</p>"
+                    "</body></html>");
+            }
+            else {
+                isConnected = false;
+                WiFi.disconnect();
+                Serial.println("Не удалось подключиться к WiFi");
+                server.send(200, "text/html", 
+                    "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Ошибка</title></head>"
+                    "<body style='font-family:Arial;text-align:center;padding:50px;'>"
+                    "<h2 style='color:red;'>Ошибка подключения!</h2>"
+                    "<p>Не удалось подключиться к сети: " + newSSID + "</p>"
+                    "<a href='/'>Попробовать снова</a>"
+                    "</body></html>");
+            }
         } else {
             server.send(400, "text/plain", "SSID cannot be empty");
         }

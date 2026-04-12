@@ -214,9 +214,9 @@ void Proj42Events::rightDistanceLongAttn()
 }
 
 void Proj42Events::HasAttn()
-{
-    proj42->HighPowMode();
+{    
     lastAttnT = millis();
+    proj42->HighPowMode();
     proj42->displayHelper->inAttn();
     if (!proj42->displayHelper->showEyes)
         proj42->displayHelper->resumeEyes();
