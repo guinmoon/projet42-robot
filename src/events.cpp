@@ -15,7 +15,8 @@ Proj42Events::Proj42Events(Proj42 *_proj42)
     leftSensorHandler = new SensorHandler(this, false);   // false = левый датчик
     rightSensorHandler = new SensorHandler(this, true);   // true = правый датчик
     
-    pinMode(TOUCH_PIN, INPUT);
+    pinMode(TOUCH_TOP_PIN, INPUT);
+    pinMode(TOUCH_RIGHT_PIN, INPUT);
 }
 
 void Proj42Events::InitSensors()
@@ -99,27 +100,26 @@ void Proj42Events::TouchTask()
     delay(1500);
     while (true)
     {
-        uint8_t touched = digitalRead(TOUCH_PIN);
+        uint8_t top_touched = digitalRead(TOUCH_TOP_PIN);                
+        uint8_t right_touched = digitalRead(TOUCH_RIGHT_PIN);
         auto currentTime = millis();
-        
-        if (touched != 0)
-        {
-            // Serial.println("Touch ");
-            this->TouchEvent();
-            
+
+        if (right_touched!=0){
+            TouchRightEvent();
+            Serial.println("Right toucher");
             // Обработка долгого нажатия
             if (!touchLongPressActive)
             {
                 touchLongPressStartT = currentTime;
                 touchLongPressActive = true;
             }
-            
-            // Проверка времени долгого нажатия
+             // Проверка времени долгого нажатия
             if (touchLongPressActive && 
                 currentTime - touchLongPressStartT > TOUCH_LONG_PRESS_INTERVAL_MS && currentTime - touchLongPressStartT < TOUCH_LONG_PRESS_INTERVAL_END_MS)
             {
                 Serial.println("in Interval");
-                proj42->displayHelper->luluEyes->close(true,true);
+                proj42->displayHelper->LookRight();
+                proj42->displayHelper->luluEyes->close(true,false);
             }
             if (touchLongPressActive && currentTime - touchLongPressStartT > TOUCH_LONG_PRESS_INTERVAL_END_MS)
             {                
@@ -140,7 +140,12 @@ void Proj42Events::TouchTask()
             touchLongPressActive = false;
             touchLongPressStartT = 0;
         }
-        
+
+        if (top_touched != 0)
+        {
+            // Serial.println("Touch ");
+            this->TouchTopEvent();
+        }                
         if (touchTopLastT != 0 && currentTime - touchTopLastT > TOUCH_TOP_LOST_INTERVAL_MS)
         {
             TouchTopLostAttn();
@@ -249,13 +254,46 @@ void Proj42Events::LostAttn()
     // proj42->displayHelper->pauseEyes();
 }
 
-void Proj42Events::TouchEvent()
+void Proj42Events::TouchRightEvent()
+{
+    HasAttn();
+    if (proj42->lightEnabled)
+        proj42->IncreaseLightBrightness();
+    // touchTopCount++;
+    // touchTopLastT = millis();
+    // if (proj42->lightEnabled)
+    //     proj42->IncreaseLightBrightness();
+    // switch (touchTopCount)
+    // {
+    // case 5:
+    //     Proj42::runTaskPriotity(&DisplayHelper::Happy, proj42->displayHelper, "Happy");                
+    //     // proj42->displayHelper->Happy();
+    //     break;
+    // // case 14:        
+    // //     proj42->displayHelper->HeartAnimation();
+    // //     break;
+    // // case 55:
+    // //     proj42->displayHelper->HeartAnimation();
+    // //     break;
+    // case 45:
+    //     // proj42->displayHelper->StartsAnimation();          
+    //     // Proj42::runTaskPriotity(&Proj42::LightLikeAnimation, proj42, "LightLikeAnimation");
+    //     proj42->displayHelper->HeartAnimation();
+    //     // Proj42::runTaskPriotity(&ServoHelper::HeartAnimMove, proj42->servoHelper, "HeartAnimTask");        
+    //     break;    
+    // default:
+    //     if (touchTopCount<12)
+            
+    //     break;
+    // }
+}
+
+void Proj42Events::TouchTopEvent()
 {
     HasAttn();
     touchTopCount++;
     touchTopLastT = millis();
-    if (proj42->lightEnabled)
-        proj42->IncreaseLightBrightness();
+    
     switch (touchTopCount)
     {
     case 5:

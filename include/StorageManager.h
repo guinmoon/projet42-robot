@@ -10,6 +10,12 @@ struct WiFiSettings {
     bool isValid;
 };
 
+struct LightSchedule {
+    int onHour;
+    int onMinute;
+    bool enabled;
+};
+
 class StorageManager {
 private:
     Preferences preferences;
@@ -23,6 +29,11 @@ public:
     WiFiSettings loadWiFiSettings();
     void clearWiFiSettings();
     bool hasSavedSettings();
+
+    void saveLightSchedule(int onHour, int onMinute, bool enabled);
+    LightSchedule loadLightSchedule();
+    void clearLightSchedule();
+    bool hasLightSchedule();
 };
 
 #endif

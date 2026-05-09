@@ -18,6 +18,7 @@ void WebServerManager3::StartWebServerThread(void *_this) {
 void WebServerManager3::WebServerTask() {
     uint32_t loopCounter = 0;
     unsigned long lastDisplayUpdateTime = 0;
+    unsigned long lastLightCheckTime = 0;
     lastRequestTime = millis();
 
     while (true) {
@@ -49,6 +50,12 @@ void WebServerManager3::WebServerTask() {
             updateAndGetTime();
             // lastNtpUpdateTime = now;
         }
+
+        // 5. Проверка расписания свечения кажд 5 sec
+        if (now - lastLightCheckTime >= 5000) {
+            checkLightSchedule();
+            lastLightCheckTime = now;
+        }
         
         delay(200);
     }
@@ -63,6 +70,7 @@ void WebServerManager3::init() {
     server.on("/connect", [this]() { this->handleConnect(); });
     server.on("/status", [this]() { this->handleStatus(); });
     server.on("/clear", [this]() { this->handleClearSettings(); });
+    server.on("/lightschedule", [this]() { this->handleLightSchedule(); });
     
     server.begin();
     
@@ -170,6 +178,75 @@ void WebServerManager3::handleClearSettings() {
         "<body style='font-family:Arial;text-align:center;padding:50px;'>"
         "<h2>Settings cleared!</h2><p>WiFi settings have been removed.</p>"
         "<a href='/'>Back</a></body></html>");
+    lastRequestTime = millis();
+}
+
+void WebServerManager3::handleLightSchedule() {
+    if (server.method() == HTTP_POST) {
+        int onHour = server.arg("onHour").toInt();
+        int onMinute = server.arg("onMinute").toInt();
+        bool enabled = server.arg("enabled") == "true";
+
+        if (onHour >= 0 && onHour <= 23 && onMinute >= 0 && onMinute <= 59) {
+            storageManager.saveLightSchedule(onHour, onMinute, enabled);
+            Serial.printf("[WebMgr] Light schedule saved: %02d:%02d, enabled=%d\n", onHour, onMinute, enabled);
+
+            server.send(200, "text/html", 
+                "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Расписание</title>"
+                "<meta http-equiv='refresh' content='2;url=/'></head>"
+                "<body style='font-family:Arial;text-align:center;padding:50px;'>"
+                "<h2>Расписание сохранено!</h2>"
+                "<p>Свечение включится в: " + String(onHour) + ":" + String(onMinute < 10 ? "0" : "") + String(onMinute) + "</p>"
+                "<p>Включено: " + (enabled ? "Да" : "Нет") + "</p>"
+                "<a href='/'>На главную</a>"
+                "</body></html>");
+        } else {
+            server.send(400, "text/html", 
+                "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Ошибка</title></head>"
+                "<body style='font-family:Arial;text-align:center;padding:50px;'>"
+                "<h2 style='color:red;'>Ошибка!</h2>"
+                "<p>Некорректное время. Часы: 0-23, Минуты: 0-59</p>"
+                "<a href='/'>Назад</a>"
+                "</body></html>");
+        }
+    } else {
+        LightSchedule schedule = storageManager.loadLightSchedule();
+        String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Расписание свечения</title>"
+            "<style>"
+            "body{font-family:Arial;max-width:500px;margin:20px auto;padding:15px;background-color:#f5f5f5;}"
+            ".container{background-color:white;padding:20px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}"
+            "h1{color:#333;text-align:center;font-size:24px;}"
+            "label{display:block;margin:10px 0 5px 0;font-weight:bold;}"
+            "input[type='number'],select{width:100%;padding:10px;margin:5px 0 15px 0;border:2px solid #ddd;border-radius:5px;box-sizing:border-box;}"
+            "input[type='submit']{width:100%;background-color:#4CAF50;color:white;padding:12px;border:none;border-radius:5px;cursor:pointer;font-size:16px;}"
+            "input[type='submit']:hover{background-color:#45a049;}"
+            ".status{margin-top:20px;padding:10px;border-radius:5px;text-align:center;background-color:#d4edda;color:#155724;border:1px solid #c3e6cb;}"
+            "</style>"
+            "</head><body><div class='container'>"
+            "<h1>Расписание свечения</h1>"
+            "<form method='POST' action='/lightschedule'>"
+            "<label for='onHour'>Время включения (часы):</label>"
+            "<input type='number' id='onHour' name='onHour' min='0' max='23' value='" + String(schedule.onHour) + "'>"
+            "<label for='onMinute'>Время включения (минуты):</label>"
+            "<input type='number' id='onMinute' name='onMinute' min='0' max='59' value='" + String(schedule.onMinute) + "'>"
+            "<label for='enabled'>Включить расписание:</label>"
+            "<select id='enabled' name='enabled'>"
+            "<option value='true'" + (schedule.enabled ? " selected" : "") + ">Да</option>"
+            "<option value='false'" + (!schedule.enabled ? " selected" : "") + ">Нет</option>"
+            "</select>"
+            "<input type='submit' value='Сохранить'>"
+            "</form>";
+        
+        if (schedule.enabled) {
+            html += "<div class='status'>Текущее расписание: Свечение включится в " + 
+                    String(schedule.onHour) + ":" + String(schedule.onMinute < 10 ? "0" : "") + String(schedule.onMinute) + "</div>";
+        }
+        
+        html += "<p style='text-align:center;margin-top:20px;'><a href='/'>На главную</a></p>"
+            "</div></body></html>";
+        
+        server.send(200, "text/html", html);
+    }
     lastRequestTime = millis();
 }
 
@@ -291,6 +368,30 @@ bool WebServerManager3::tryAutoConnect() {
         Serial.printf("No stored settings found, start AP Mode\n");
     }
     return false;
+}
+
+void WebServerManager3::checkLightSchedule() {
+    if (!storageManager.hasLightSchedule()) {
+        return;
+    }
+
+    LightSchedule schedule = storageManager.loadLightSchedule();
+    if (!schedule.enabled) {
+        return;
+    }
+
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+        int currentHour = timeinfo.tm_hour;
+        int currentMinute = timeinfo.tm_min;
+
+        if (currentHour >= schedule.onHour && currentMinute >= schedule.onMinute) {
+            Serial.printf("[WebMgr] Light schedule triggered at %02d:%02d\n", currentHour, currentMinute);
+            if (proj42 != nullptr) {
+                proj42->EnableLight();
+            }
+        }
+    }
 }
 
 bool WebServerManager3::getConnectedStatus() {

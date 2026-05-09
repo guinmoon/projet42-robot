@@ -87,6 +87,10 @@ const char loginPage[] PROGMEM = R"=====(
         </form>
         
         <div id="statusMessage"></div>
+        
+         <div style="text-align:center;margin-top:20px;">
+             <a href="/lightschedule" style="display:inline-block;padding:10px 20px;background-color:#2196F3;color:white;text-decoration:none;border-radius:5px;font-size:14px;">⚡ Расписание свечения</a>
+         </div>
     </div>
 
     <script>

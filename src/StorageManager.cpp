@@ -44,3 +44,29 @@ void StorageManager::clearWiFiSettings() {
 bool StorageManager::hasSavedSettings() {
     return preferences.getBool("valid", false);
 }
+
+void StorageManager::saveLightSchedule(int onHour, int onMinute, bool enabled) {
+    preferences.putInt("lightOnHour", onHour);
+    preferences.putInt("lightOnMinute", onMinute);
+    preferences.putBool("lightEnabled", enabled);
+    Serial.println("Light schedule saved to flash memory");
+}
+
+LightSchedule StorageManager::loadLightSchedule() {
+    LightSchedule schedule;
+    schedule.enabled = preferences.getBool("lightEnabled", false);
+    schedule.onHour = preferences.getInt("lightOnHour", 0);
+    schedule.onMinute = preferences.getInt("lightOnMinute", 0);
+    return schedule;
+}
+
+void StorageManager::clearLightSchedule() {
+    preferences.remove("lightOnHour");
+    preferences.remove("lightOnMinute");
+    preferences.remove("lightEnabled");
+    Serial.println("Light schedule cleared from flash memory");
+}
+
+bool StorageManager::hasLightSchedule() {
+    return preferences.getBool("lightEnabled", false);
+}

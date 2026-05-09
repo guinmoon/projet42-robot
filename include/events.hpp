@@ -35,7 +35,8 @@ public:
 
     static void StartTouchThread(void *_this);
     void TouchTask();
-    void TouchEvent();
+    void TouchTopEvent();
+    void TouchRightEvent();
     void TouchLongPressEvent();
     void TouchTopLostAttn();
     void HasAttn();

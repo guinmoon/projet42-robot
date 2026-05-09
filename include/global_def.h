@@ -1,7 +1,8 @@
 
 #define WIRE Wire
 
-#define TOUCH_PIN 35
+#define TOUCH_TOP_PIN 35
+#define TOUCH_RIGHT_PIN 39
 #define BUILTIN_LED 2
 
 

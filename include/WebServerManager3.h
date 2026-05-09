@@ -45,6 +45,7 @@ private:
     void handleConnect();
     void handleStatus();
     void handleClearSettings();
+    void handleLightSchedule();
     
     // Вспомогательные методы
     String getJsonStatus();
@@ -54,6 +55,7 @@ private:
     void stopSoftAP();
     void processAsyncConnect();
     void checkWiFiTimeout(); // Полное отключение WiFi по таймауту
+    void checkLightSchedule(); // Проверка расписания свечения
     
 public:
     char weatherStr[15];
