@@ -388,7 +388,8 @@ void WebServerManager3::checkLightSchedule() {
         if (currentHour >= schedule.onHour && currentMinute >= schedule.onMinute) {
             Serial.printf("[WebMgr] Light schedule triggered at %02d:%02d\n", currentHour, currentMinute);
             if (proj42 != nullptr) {
-                proj42->EnableLight();
+                if (!proj42->lightEnabled)
+                    proj42->EnableLight();
             }
         }
     }
